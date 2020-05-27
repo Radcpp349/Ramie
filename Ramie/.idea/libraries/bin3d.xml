@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="bin3d">
+    <CLASSES />
+    <JAVADOC />
+    <NATIVE>
+      <root url="file://$PROJECT_DIR$/ext/bin3d" />
+    </NATIVE>
+    <SOURCES />
+  </library>
+</component>
