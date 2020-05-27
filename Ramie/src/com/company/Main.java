@@ -18,6 +18,5 @@ public class Main {
         ToolTipManager ttm=ToolTipManager.sharedInstance();
        ttm.setLightWeightPopupEnabled(false);
         Background obiekt = new Background();
-
     }
 }
