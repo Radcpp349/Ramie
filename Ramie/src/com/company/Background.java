@@ -37,11 +37,6 @@ public class Background extends JFrame {
 
         universe.addBranchGraph(group);
     }
-/*
-public static void main(String[] args){
-        new Background();
-}
 
-*/
 
 }
