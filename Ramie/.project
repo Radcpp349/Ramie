@@ -14,4 +14,11 @@
 	<natures>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>bin3d</name>
+			<type>2</type>
+			<location>J:/Eclipse_worksplace/Ramie/Ramie/Ramie/ext/bin3d</location>
+		</link>
+	</linkedResources>
 </projectDescription>
