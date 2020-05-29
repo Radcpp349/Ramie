@@ -69,7 +69,8 @@ public class Ramie {
 	      com.sun.j3d.utils.geometry.Box ram = new com.sun.j3d.utils.geometry.Box(2.8f, 0.18f, 0.6f, wygladRamienia1);
 	      
 	      Transform3D p_przesuniety1_ram = new Transform3D();
-	      p_przesuniety1_ram.setTranslation(new Vector3f(0.0f, 3.38f, 0.0f));
+	      p_przesuniety1_ram.setTranslation(new Vector3f(2.0f, 3.0f, 0.8f));
+	      
 	      TransformGroup t_przesunieta1_ram = new TransformGroup (p_przesuniety1_ram);
 	      
 	      Transform3D p_przesuniety0_ram = new Transform3D();
@@ -79,7 +80,12 @@ public class Ramie {
 	      
 	      Transform3D p_przesuniety2_ram = new Transform3D();
 	      p_przesuniety2_ram.setTranslation(new Vector3f(2.8f, 0.f, 0.0f));
+	      p_przesuniety2_ram.rotX(Math.PI/2.0);
+	      
+	      
 	      TransformGroup t_przesunieta2_ram = new TransformGroup (p_przesuniety2_ram);
+	      
+	      
 	      
 	      t_walca.addChild(t_przesunieta1_ram);
 	      t_przesunieta1_ram.addChild(t_przesunieta0_ram);
@@ -141,6 +147,7 @@ public class Ramie {
 
 	      
 	      //walec ruchomy-----------------------------------------------------------//
+	      /*
 	      Cylinder walec2 = new Cylinder(0.24f, 6.5f,wygladCylindra);
 	      
 	      Transform3D p_przesuniety1_walca = new Transform3D();
@@ -158,8 +165,9 @@ public class Ramie {
 	      t_przesunieta0_walca.addChild(walec2);
 	      
 	 
-	      wezel_scena.addChild(t_gen);
 	      
+	      */
+	      wezel_scena.addChild(t_gen);
 	      //STOZEK DOLNY (nieruchomy)--------------------------------------------------//
 	      Appearance  wygladStozkaDolnego = new Appearance();
 	      wygladStozkaDolnego.setMaterial(zielonkawy);
