@@ -17,6 +17,7 @@ public class Main {
        JPopupMenu.setDefaultLightWeightPopupEnabled(false);
         ToolTipManager ttm=ToolTipManager.sharedInstance();
        ttm.setLightWeightPopupEnabled(false);
-        World obiekt = new World();
+       Ramie ramie = new Ramie();
+        World obiekt = new World(ramie);
     }
 }
