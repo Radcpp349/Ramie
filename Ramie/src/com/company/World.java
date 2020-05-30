@@ -19,6 +19,8 @@ import com.sun.j3d.utils.behaviors.mouse.*;
 import com.sun.j3d.utils.geometry.*;
 import javax.vecmath.*;
 import java.awt.GraphicsConfiguration;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 
 
 
@@ -27,22 +29,42 @@ import java.awt.GraphicsConfiguration;
 public class World extends JFrame {
 
     java.net.URL bgImage = null;
-
-
-    public World() {
+    private Ramie ramie;
+    //private boolean klawisze[];
+    
+    
+     World() {
+    	 
+    	//klawisze = new boolean[6];
+    	this.ramie = new Ramie();
         GraphicsConfiguration config =
                 SimpleUniverse.getPreferredConfiguration();
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         Canvas3D canvas3D = new Canvas3D(config);
         canvas3D.setPreferredSize(new Dimension(1200,900));
-
-
+        /*adding buttons, doesnt seem to work tho xd---------------------------------------//
+        JPanel rootPanel = new JPanel(new BorderLayout());
+        JPanel controlPanel = new JPanel(new FlowLayout());
+        controlPanel.add(new JButton("Alpha"));
+        controlPanel.add(new JButton("Beta"));
+        controlPanel.add(new JButton("Gamma"));
+        rootPanel.add(controlPanel, BorderLayout.NORTH);
+        rootPanel.add(canvas3D, BorderLayout.CENTER);
+        -------------------------------------------------------------------------------------*/
+       //KeyListener, jednak trzeba to zrobić w ten sposób, tak wychodzi z programu Merty
+        
+        canvas3D = ramie.canv_KeyListener(canvas3D);
+        
+        
+        
+        ///Koniec KeyListenera
         add(canvas3D);
         pack();
         setVisible(true);
         SimpleUniverse universe = new SimpleUniverse(canvas3D);
         BranchGroup group = CreateGroup();
+        BranchGroup robot = ramie.Robot();
 
         group.compile();
         universe.getViewingPlatform().setNominalViewingTransform();
@@ -60,13 +82,14 @@ public class World extends JFrame {
         // add orbit behavior to the viewing platform
         OrbitBehavior orbit = new OrbitBehavior(canvas3D, OrbitBehavior.REVERSE_ALL);
         BoundingSphere bounds =
-                new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 100.0);
+                new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 200.0);
         orbit.setSchedulingBounds(bounds);
         viewingPlatform.setViewPlatformBehavior(orbit);
 
         universe.addBranchGraph(group);
+        universe.addBranchGraph(robot);
 
-        przesuniecie_obserwatora.set(new Vector3f(1.0f,2.0f,15.0f));
+        przesuniecie_obserwatora.set(new Vector3f(0.0f,0.0f,15.0f));
 
         universe.getViewingPlatform().getViewPlatformTransform().setTransform(przesuniecie_obserwatora);
     }
@@ -75,7 +98,7 @@ public class World extends JFrame {
     BranchGroup CreateGroup(){
 
         BranchGroup wezel_scena = new BranchGroup();
-        wezel_scena.addChild(new ColorCube(0.5f));
+        //wezel_scena.addChild(new ColorCube(0.5f));
 
 
 
@@ -85,13 +108,13 @@ public class World extends JFrame {
 
         //ŚWIATŁA
 
-        AmbientLight lightB = new AmbientLight(new Color3f(1.0f,1.0f,1.0f));
+        AmbientLight lightB = new AmbientLight(new Color3f(0.0f,0.0f,0.0f));
         lightB.setInfluencingBounds(bounds);
         wezel_scena.addChild(lightB);
 
         DirectionalLight lightD = new DirectionalLight();
         lightD.setInfluencingBounds(bounds);
-        lightD.setDirection(new Vector3f(0.0f, 0.0f, -1.0f));
+        lightD.setDirection(new Vector3f(0.0f, 0.0f, -10.0f));
         lightD.setColor(new Color3f(1.0f, 1.0f, 1.0f));
         wezel_scena.addChild(lightD);
 
@@ -102,21 +125,21 @@ public class World extends JFrame {
         Background background = new Background();
         background.setApplicationBounds(bounds);
         Appearance backgroundApp = new Appearance();
+        
 
-
-
+        /*
         Texture tex = new TextureLoader( "tlo.jpg", this).getTexture();
         if (tex != null)
         {backgroundApp.setTexture(tex);
             System.out.println("ok");}
 
 
-        Box box = new Box(30.0f,30.0f,30.0f,Primitive.GENERATE_TEXTURE_COORDS | Primitive.GENERATE_NORMALS |
+        Box box = new Box(-10.0f,-10.0f,-10.0f,Primitive.GENERATE_TEXTURE_COORDS | Primitive.GENERATE_NORMALS |
 
                                 Primitive.GENERATE_NORMALS_INWARD,backgroundApp);
+	*/
 
-
-        wezel_scena.addChild(box);
+        //wezel_scena.addChild(box);
 
         //Sphere sphere = new Sphere( 10.0f,
                 //Primitive.GENERATE_TEXTURE_COORDS |
