@@ -55,9 +55,7 @@ public class World extends JFrame {
        //KeyListener, jednak trzeba to zrobić w ten sposób, tak wychodzi z programu Merty
         
         canvas3D = ramie.canv_KeyListener(canvas3D);
-        
-        
-        
+                
         ///Koniec KeyListenera
         add(canvas3D);
         pack();

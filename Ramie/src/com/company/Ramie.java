@@ -36,6 +36,8 @@ public class Ramie {
 		
 		BranchGroup wezel_scena = new BranchGroup();
 		
+		
+		/* ustawiamy materiały, póiej zmiana w tekstury--------------------------------------------*/
 		Material zielonkawy = new Material();
 	    zielonkawy.setDiffuseColor(0.9f,0.3f,0.3f);
 	    zielonkawy.setEmissiveColor(0.0f,0.5f,0.1f);
@@ -101,6 +103,7 @@ public class Ramie {
 	      Transform3D p_przesuniety1_ram = new Transform3D();
 	      p_przesuniety1_ram.setTranslation(new Vector3f(2.0f, 3.0f, 0.8f));
 	      TransformGroup t_przesunieta1_ram = new TransformGroup (p_przesuniety1_ram);
+	      
 	     
 	      Transform3D p_przesuniety0_ram = new Transform3D();
 	      p_przesuniety0_ram.setTranslation(new Vector3f(0.0f, 0.0f, 0.0f));
@@ -111,6 +114,7 @@ public class Ramie {
 	      Transform3D p_przesuniety2_ram = new Transform3D();
 	      p_przesuniety2_ram.setTranslation(new Vector3f(0.8f, 0.f, 0.0f));
 	      TransformGroup t_przesunieta2_ram = new TransformGroup (p_przesuniety2_ram);
+	      
 	      	      
 	      t_walca.addChild(t_przesunieta1_ram);
 	      t_przesunieta1_ram.addChild(t_przesunieta0_ram);
@@ -187,6 +191,8 @@ public class Ramie {
 	    
 	    ///KONIEC KODU
 	      
+	      /// Interakcja z robotem, obroty, nie działą obrót 1 ramienia tak jak powinien--------------------------//
+	      
 	      Obrot_podstawy_robota obrot_podstawy = new Obrot_podstawy_robota(t_walca_2);
 	      obrot_podstawy.setSchedulingBounds(new BoundingSphere());
 	      wezel_scena.addChild(obrot_podstawy);
@@ -208,6 +214,8 @@ public class Ramie {
 	}
 
 	public Canvas3D canv_KeyListener(Canvas3D canvas3D) {
+		
+		
 		
 		canvas3D.addKeyListener(new KeyListener(){
        	 public void keyPressed(KeyEvent e){
