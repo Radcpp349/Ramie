@@ -3,26 +3,11 @@ package com.company;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.Enumeration;
+import java.util.Vector;
 
-import javax.media.j3d.Appearance;
-import javax.media.j3d.Behavior;
-import javax.media.j3d.BoundingSphere;
-import javax.media.j3d.Bounds;
-import javax.media.j3d.BranchGroup;
-import javax.media.j3d.Canvas3D;
-import javax.media.j3d.Material;
-import javax.media.j3d.Node;
-import javax.media.j3d.Shape3D;
-import javax.media.j3d.Transform3D;
-import javax.media.j3d.TransformGroup;
-import javax.media.j3d.WakeupCriterion;
-import javax.media.j3d.WakeupOnAWTEvent;
-import javax.media.j3d.WakeupOnCollisionEntry;
-import javax.media.j3d.WakeupOnCollisionExit;
-import javax.media.j3d.WakeupOnCollisionMovement;
-import javax.media.j3d.WakeupOr;
 import javax.media.j3d.*;
 import javax.swing.*;
+import javax.vecmath.Matrix3f;
 import javax.vecmath.Point3d;
 import javax.vecmath.Point4d;
 import javax.vecmath.Vector3d;
@@ -44,12 +29,15 @@ import com.sun.j3d.utils.image.TextureLoader;
 public class Ramie extends JFrame {
 
 	private boolean klawisze[];
-
+	private Vector movements;
+	private boolean recordingON;
+	private boolean temp1;
+	
 	public Ramie(){
 
-		this.klawisze = new boolean[6];
-		//BranchGroup robot = Robot();
-
+		this.klawisze = new boolean[7];
+		this.movements = new Vector<>();
+		this.temp1 = true;
 	}
 
 
@@ -215,7 +203,7 @@ public class Ramie extends JFrame {
 		Box ram2 = new Box(2.8f, 0.6f, 0.18f,Primitive.GENERATE_TEXTURE_COORDS | Primitive.GENERATE_NORMALS | Primitive.GENERATE_NORMALS_INWARD, wygladRamienia2);
 
 		Transform3D p_przesuniety1_ram2 = new Transform3D();
-		p_przesuniety1_ram2.setTranslation(new Vector3f(2.8f, 0.0f, 0.5f));
+		p_przesuniety1_ram2.setTranslation(new Vector3f(2.8f, 0.0f, 0.9f));
 		TransformGroup t_przesunieta1_ram2 = new TransformGroup (p_przesuniety1_ram2);
 
 		Transform3D p_przesuniety0_ram2 = new Transform3D();
@@ -234,13 +222,17 @@ public class Ramie extends JFrame {
 		t_przesunieta2_ram2.addChild(ram2);
 
 		//zaokrąglenie przedramienia------------------------------------------------------------//
-		Sphere zaok1_ram2 = new Sphere(0.7f,Primitive.GENERATE_TEXTURE_COORDS | Primitive.GENERATE_NORMALS | Primitive.GENERATE_NORMALS_INWARD, wygladRamienia1);
+		Sphere zaok1_ram2 = new Sphere(0.65f,Primitive.GENERATE_TEXTURE_COORDS | Primitive.GENERATE_NORMALS | Primitive.GENERATE_NORMALS_INWARD, wygladRamienia1);
 		Transform3D p_zaok1_ram2 = new Transform3D();
-		p_zaok1_ram2.setTranslation(new Vector3f(-2.8f, 0.f, 0.1f));
+		p_zaok1_ram2.setTranslation(new Vector3f(-2.8f, 0.0f, -0.4f));
 		TransformGroup t_zaok1_ram2 = new TransformGroup (p_zaok1_ram2);
 		t_zaok1_ram2.addChild(zaok1_ram2);
+		
 		t_przesunieta2_ram2.addChild(t_zaok1_ram2);
-
+		
+		t_przesunieta2_ram2.setBounds(new BoundingBox(new Point3d(0.0d,3.2d, 0.0d), new Point3d(5.0d ,3.6d, 0.4d)));
+		
+		
 		Appearance  wygladChwytak = new Appearance();
 
 		Texture texChwytak= new TextureLoader( "blacha.jpeg", this).getTexture();
@@ -251,7 +243,7 @@ public class Ramie extends JFrame {
 		Transform3D p_sphere2 = new Transform3D();
 		p_sphere2.setTranslation(new Vector3f(3.0f, 0.f, 0.0f));
 		TransformGroup t_sphere2 = new TransformGroup (p_sphere2);
-		t_sphere2.setBounds(new BoundingSphere(new Point3d(5.0d,6.0d,0.0d),0.6d));
+		t_sphere2.setBounds(new BoundingSphere(new Point3d(5.4d,3.6d,1.0d),0.4d));
 		t_sphere2.addChild(sphere2);
 		t_przesunieta2_ram2.addChild(t_sphere2);
 
@@ -264,7 +256,7 @@ public class Ramie extends JFrame {
 		{wygladObiektu.setTexture(texObiekt1); }
 
 		Sphere KulaDolna = new Sphere(1.6f,Primitive.GENERATE_TEXTURE_COORDS | Primitive.GENERATE_NORMALS | Primitive.GENERATE_NORMALS_INWARD, wygladObiektu);
-
+		//KulaDolna.setUserData("CHUJ");
 		Transform3D  p_KuliDolnej   = new Transform3D();
 		p_KuliDolnej.set(new Vector3f(11.4f,1.8f,0.3f));
 		TransformGroup transformacja_s2 = new TransformGroup(p_KuliDolnej);
@@ -274,7 +266,7 @@ public class Ramie extends JFrame {
 
 		///KONIEC KODU
 
-		/// Interakcja z robotem, obroty, nie działą obrót 1 ramienia tak jak powinien--------------------------//
+		/// Interakcja z robotem, obroty, nie działą obrót 1 ramienia tak jak powinien-----update 19.06, już działa---------------------//
 
 		Obrot_podstawy_robota obrot_podstawy = new Obrot_podstawy_robota(t_walca_2);
 		obrot_podstawy.setSchedulingBounds(new BoundingSphere());
@@ -287,50 +279,83 @@ public class Ramie extends JFrame {
 		Obrot_ramienia_2 obrot_ramienia_2 = new Obrot_ramienia_2(t_przesunieta0_ram2);
 		obrot_ramienia_2.setSchedulingBounds(new BoundingSphere());
 		wezel_scena.addChild(obrot_ramienia_2);
+		
+		Grabbed grabbed = new Grabbed(t_przesunieta2_ram2,transformacja_s2);
+		//grabbed.setSchedulingBounds(new BoundingSphere());
+		wezel_scena.addChild(grabbed);
 
-		Point3d point = new Point3d(9.2d, 0.7d, 0.3d); ///Zmieniłem!!!
+		Point3d point = new Point3d(11.4d, 1.8d, 0.3d); ///Zmieniłem!!!
 
 		KulaDolna.setBounds(new BoundingSphere(point, 0.1d));
 		Coll coll = new Coll(KulaDolna, KulaDolna.getBounds());
 		wezel_scena.addChild(coll);
 
+		/* do nagrywania, nie działa bo to kurwa jebana
+		Matrix3f matrix = new Matrix3f();
+		Vector3f vect = new Vector3f();
+		if(recordingON && temp1) {
+			p_walca_2.get(matrix, vect);
+			
+			temp1 = false;
+		}
+		*/
+		
 		return wezel_scena;
-
+		
+		/*
+		 * żebym nie zapomniał
+		 * jutro zmienić collision, pobierać pozycję kulki i podłogi i jeśli robot na to najedzie to mu zabraniać,
+		 * zamiast sfery zrobić boxa/cuba, będzie łatwiej blokować ruch
+		 * 
+		 * względem nagrywania po prostu odtworzyć sekwencje ruchów, nie bawić sie w timery,
+		 * wwalić to do wektora/arraya, najlepiej jakoś z odpowiednimi ruchami tj.
+		 * który się poruszył i w którą stronę
+		 * 
+		 * wyswietlac napis ktory powie czy mozemy zlapac kostke czy nie
+		 * addchild i wgl do kostki
+		 * */
 
 	}
+	
+	
 
 	public Canvas3D canv_KeyListener(Canvas3D canvas3D) {
 
 
 
 		canvas3D.addKeyListener(new KeyListener(){
-									public void keyPressed(KeyEvent e){
-										switch(e.getKeyChar()){
-											case 'q':      klawisze[0] = true; break;
-											case 'w':      klawisze[1] = true; break;
-											case 'e':      klawisze[2] = true; break;
-											case 'a':      klawisze[3] = true; break;
-											case 's':      klawisze[4] = true; break;
-											case 'd':      klawisze[5] = true; break;
+			public void keyPressed(KeyEvent e){
+				switch(e.getKeyChar()){
+					case 'q':      klawisze[0] = true; break;
+					case 'w':      klawisze[1] = true; break;
+					case 'e':      klawisze[2] = true; break;
+					case 'a':      klawisze[3] = true; break;
+					case 's':      klawisze[4] = true; break;
+					case 'd':      klawisze[5] = true; break;
+					//recording
+					//case 'o':	   recordingON = true; break;
+					//case 'i':      playing(); break;
+					case 'r':	   klawisze[6] = true; break;
+				}
+			}
 
-										}
-									}
+			public void keyReleased(KeyEvent e){
+				switch(e.getKeyChar()){
+					case 'q':    klawisze[0] = false; break;
+					case 'w':    klawisze[1] = false; break;
+					case 'e':    klawisze[2] = false; break;
+					case 'a':    klawisze[3] = false; break;
+					case 's':    klawisze[4] = false; break;
+					case 'd':    klawisze[5] = false; break;
+					//recording
+					//case 'p':	 recordingON = false; break;
+					case 't':	 klawisze[6] = false; break;
+				}
+			}
 
-									public void keyReleased(KeyEvent e){
-										switch(e.getKeyChar()){
-											case 'q':    klawisze[0] = false; break;
-											case 'w':    klawisze[1] = false; break;
-											case 'e':    klawisze[2] = false; break;
-											case 'a':    klawisze[3] = false; break;
-											case 's':    klawisze[4] = false; break;
-											case 'd':    klawisze[5] = false; break;
-
-										}
-									}
-
-									public void keyTyped(KeyEvent e){
-									}
-								}
+			public void keyTyped(KeyEvent e){
+			}
+		}
 		);
 
 		return canvas3D;
@@ -351,10 +376,14 @@ public class Ramie extends JFrame {
 		}
 		@Override
 		public void processStimulus(Enumeration enmrtn) {
-			if(klawisze[0]&&(kat<3.14))
+			if(klawisze[0]&&(kat<3.14)) {
 				kat+=0.03f;
-			if(klawisze[2]&&(kat>-3.14))
+				if(recordingON)
+					movements.add(1);}
+			if(klawisze[2]&&(kat>-3.14)) {
 				kat-=0.03f;
+				if(recordingON)
+					movements.add(2);}
 			obrot.rotY(kat);
 			ref_do_tg.setTransform(obrot);
 			this.wakeupOn(new WakeupOnAWTEvent(KeyEvent.KEY_PRESSED));
@@ -376,10 +405,14 @@ public class Ramie extends JFrame {
 		}
 		@Override
 		public void processStimulus(Enumeration enmrtn) {
-			if(klawisze[3]&&(kat<2.85))
+			if(klawisze[3]&&(kat<2.85)) {
 				kat+=0.03f;
-			if(klawisze[5]&&(kat>-2.85))
+				if(recordingON)
+					movements.add(3);}
+			if(klawisze[5]&&(kat>-2.85)) {
 				kat-=0.03f;
+				if(recordingON)
+					movements.add(4);}
 			obrot.rotZ(kat);
 
 			ref_do_tg.setTransform(obrot);
@@ -409,14 +442,47 @@ public class Ramie extends JFrame {
 		}
 		@Override
 		public void processStimulus(Enumeration enmrtn) {
-			if(klawisze[1]&&(kat<3.14))
+			if(klawisze[1]&&(kat<3.14)) {
 				kat+=0.03f;
-			if(klawisze[4]&&(kat>-3.14))
+				if(recordingON)
+					movements.add(5);}
+			if(klawisze[4]&&(kat>-3.14)) {
 				kat-=0.03f;
+				if(recordingON)
+					movements.add(6);}
 
 			obrot.rotZ(kat);
 
 			ref_do_tg.setTransform(obrot);
+			this.wakeupOn(new WakeupOnAWTEvent(KeyEvent.KEY_PRESSED));
+		}
+	}
+	
+	public class Grabbed extends Behavior{
+		
+		private TransformGroup tg1;
+		private TransformGroup tg2;
+		private BranchGroup chuj;
+
+		Grabbed(TransformGroup th1,TransformGroup th2){
+			this.tg1 = th1;
+			this.tg2 = th2;
+
+		}
+		@Override
+		public void initialize() {
+			this.wakeupOn(new WakeupOnAWTEvent(KeyEvent.KEY_PRESSED));
+		}
+		@Override
+		public void processStimulus(Enumeration enmrtn) {
+			if(klawisze[6]) {
+				this.chuj.addChild(tg1);
+				this.chuj.addChild(tg2);
+			}
+			else {
+				this.chuj.removeChild(tg1);
+				this.chuj.removeChild(tg2);
+				}
 			this.wakeupOn(new WakeupOnAWTEvent(KeyEvent.KEY_PRESSED));
 		}
 	}
