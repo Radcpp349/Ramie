@@ -20,6 +20,14 @@ import com.sun.j3d.utils.geometry.*;
 import javax.vecmath.*;
 import java.awt.GraphicsConfiguration;
 
+import com.sun.j3d.utils.universe.SimpleUniverse;
+
+import javax.vecmath.Vector3f;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 
 
 
@@ -27,15 +35,20 @@ import java.awt.GraphicsConfiguration;
 public class World extends JFrame {
 
 
-    private Ramie ramie;     //wywołujemy ramię robota, aby wyświetlać je w oknie
+    private Ramie ramie;     //deklarujemy ramię robota, aby wyświetlać je w oknie
+    private Buttons buttons;  //Deklarujemy panel z przyciskami
 
-    private JButton przyciski[] = null;    //Tworzymy panel z przyciskami
 
 
     //parametry służące do regulacji wielkości tła
     private float size;
     private float height;
     private float xz;
+
+    private Transform3D przesuniecie_obserwatora = new Transform3D();
+    private Vector3f dystans = new Vector3f(5.5f,5.0f,37.0f);
+    public SimpleUniverse universe;
+
 
     //Na potrzeby obrotu kamery i świateł dodajemy BoundingSphere
     BoundingSphere bounds = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 300.0);
@@ -49,25 +62,20 @@ public class World extends JFrame {
         this.height= 0.5f*size-3;
         this.xz = 6.0f;
 
-        //Dodajemy panel z przyciskami
+        //Wyświetlamy okno programu
         GraphicsConfiguration config = SimpleUniverse.getPreferredConfiguration();
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.ramie = new Ramie();
-        this.przyciski = new JButton[3];
-        przyciski[0] = new JButton("Reset Kamery");
-        przyciski[1] = new JButton("Nagrywanie");
-        przyciski[2] = new JButton("Stop nagrywania");
+        this.buttons = new Buttons();
+
         Canvas3D canvas3D = new Canvas3D(config);
         canvas3D.setPreferredSize(new Dimension(1200,900));
-
-        JPanel controlPanel = new JPanel(new FlowLayout());
         Container content;
         setLayout(null);
         content = getContentPane();
         content.setLayout(new BorderLayout());
-        controlPanel.add(przyciski[0]);
-        controlPanel.add(przyciski[1]);
-        controlPanel.add(przyciski[2]);
+        JPanel controlPanel = buttons.DodajPanel();
+
         content.add(controlPanel, BorderLayout.NORTH);
         content.add(canvas3D, BorderLayout.CENTER);
 
@@ -82,14 +90,15 @@ public class World extends JFrame {
         add(canvas3D);
         pack();
         setVisible(true);
-        SimpleUniverse universe = new SimpleUniverse(canvas3D);
-        BranchGroup group = CreateGroup();
+       this.universe = new SimpleUniverse(canvas3D);
+
+        BranchGroup group = CreateGroup(universe);
         BranchGroup robot = ramie.Robot();
 
         group.compile();
         universe.getViewingPlatform().setNominalViewingTransform();
 
-        Transform3D przesuniecie_obserwatora = new Transform3D();
+
 
 
         // Dodajemy sterowanie obrotem za pomocą myszki
@@ -108,16 +117,19 @@ public class World extends JFrame {
         universe.addBranchGraph(robot);
 
         //Ustawiamy optymalne startowe przesunięcie kamery, a robot był dobrze widoczny
-        przesuniecie_obserwatora.set(new Vector3f(5.5f,5.0f,37.0f));
+
+        przesuniecie_obserwatora.set(dystans);
 
         universe.getViewingPlatform().getViewPlatformTransform().setTransform(przesuniecie_obserwatora);
 
         //Zwiększamy zasię renderowania, aby uniknąć ,,czarnych plam"
         universe.getViewer().getView().setBackClipDistance(1000);
+
+
     }
 
 
-    BranchGroup CreateGroup(){
+    BranchGroup CreateGroup(SimpleUniverse universe){
 
         BranchGroup wezel_scena = new BranchGroup();
 
@@ -240,6 +252,83 @@ public class World extends JFrame {
 
 
         return wezel_scena;
+
+    }
+
+    public class Buttons extends JFrame {
+        private JButton przyciski[] = null;    //Tworzymy panel z przyciskami
+        private JFrame ref_okno;
+        private boolean czy_reset = false;
+
+        public Buttons(){
+            this.przyciski = new JButton[4];
+            przyciski[0] = new JButton("Reset Kamery");
+            przyciski[0].addActionListener(new ObslugaPrzycisku(ref_okno));
+            przyciski[1] = new JButton("Nagrywanie");
+            przyciski[1].addActionListener(new ObslugaPrzycisku(ref_okno));
+            przyciski[2] = new JButton("Stop nagrywania");
+            przyciski[2].addActionListener(new ObslugaPrzycisku(ref_okno));
+            przyciski[3] = new JButton("Instrukcja");
+            przyciski[3].addActionListener(new ObslugaPrzycisku(ref_okno));}
+
+        private class ObslugaPrzycisku implements ActionListener {
+
+            ObslugaPrzycisku(JFrame okno) {ref_okno = okno; }
+
+            public void actionPerformed(ActionEvent e) {
+
+                JButton bt = (JButton)e.getSource();
+                if(bt == przyciski[0])
+                {
+                    przesuniecie_obserwatora.set(dystans);
+                   universe.getViewingPlatform().getViewPlatformTransform().setTransform(przesuniecie_obserwatora);
+                }
+
+                else if (bt == przyciski[1])
+                {   System.out.println("czaczacza");}
+                else if (bt == przyciski[2])
+                { }
+                else if (bt == przyciski[3])
+                { JOptionPane.showInternalMessageDialog(ref_okno, "Schemat sterowania robotem:\n" +
+                                "Q - Obrót podstawy robota przeciwnie do ruchu wskazówek zegara (patrzac z góry) \n" +
+                                "E - Obrót podstawy robota zgdonie z ruchem wskazówek zegara (patrząc z góry) \n" +
+                                "W - Ruch ramienia w górę \n" +
+                                "S - Ruch ramienia w dół \n" +
+                                "A - Ruch przedramienia w górę \n" +
+                                "D - Ruch przedramienia w dół \n",
+                        "Instrukcja", JOptionPane.INFORMATION_MESSAGE);
+                    przesuniecie_obserwatora.set(dystans);
+                    universe.getViewingPlatform().getViewPlatformTransform().setTransform(przesuniecie_obserwatora);
+                    System.out.println("czaczacza");}
+
+            }
+        }
+
+
+
+        public JPanel DodajPanel()  {
+            JPanel controlPanel = new JPanel(new FlowLayout());
+
+            controlPanel.add(przyciski[0]);
+            controlPanel.add(przyciski[1]);
+            controlPanel.add(przyciski[2]);
+            controlPanel.add(przyciski[3]);
+
+
+            return controlPanel;
+        }
+
+        public void resetkamery (){
+            czy_reset = true;
+        }
+
+        public boolean czy_resetujemy (){
+            return czy_reset;
+        }
+        public void zresetowano (){
+            czy_reset = false;
+        }
+
 
     }
 
