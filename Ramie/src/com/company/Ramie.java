@@ -32,10 +32,6 @@ import com.sun.j3d.utils.image.TextureLoader;
 public class Ramie extends JFrame {
 
 	private boolean klawisze[];
-	private Vector movements;
-	private boolean recordingON;
-	private boolean temp1;
-	
 
     private Timer zegar = new Timer();
     //private ViewingPlatform vPlatform;
@@ -44,7 +40,8 @@ public class Ramie extends JFrame {
     private boolean przenoszenie = false;
     private boolean odtworz_ruch = false;
     private boolean CzyDzwiek = true;
-	
+    
+    
 	  // katy przesunięć robota
     private float α_podstawa = 0f; // kąt przesunięcia bazy robota
     private float α_przegub = 0f; // kat przesuniecia ramienia1
@@ -52,9 +49,7 @@ public class Ramie extends JFrame {
 	
     ArrayList <PozycjaRobota> nagranie = new ArrayList<PozycjaRobota>();
     int klatka = 0;
-    
-    
-     
+             
     private Transform3D p_walca_2 = new Transform3D();
     private Transform3D p_zaok1_ram_2 = new Transform3D();
     private Transform3D p_przesuniety0_ram2 = new Transform3D();
@@ -64,7 +59,7 @@ public class Ramie extends JFrame {
     
 	public Ramie(){
 
-		this.klawisze = new boolean[7];
+		this.klawisze = new boolean[6];
 		//zapamiętywanie pozycji robota
 		 //zegar aby odświeżać ekran
         zegar.scheduleAtFixedRate(new Poruszanie(), 0, 10);
@@ -381,6 +376,7 @@ public class Ramie extends JFrame {
 									odtworz_ruch = true; 
 									System.out.println("Odtwarzanie"); break;}
 					case 'r':	    odtworz_ruch = !odtworz_ruch; System.out.println("Stop odtwarzania"); break;
+					case 'p':		Reset_robota(); break;
 								   
 				}
 			}
@@ -393,9 +389,6 @@ public class Ramie extends JFrame {
 					case 'a':    klawisze[3] = false; break;
 					case 's':    klawisze[4] = false; break;
 					case 'd':    klawisze[5] = false; break;
-					//recording
-					//case 'p':	 recordingON = false; break;
-					case 't':	 klawisze[6] = false; break;
 				}
 			}
 
@@ -406,15 +399,24 @@ public class Ramie extends JFrame {
 
 		return canvas3D;
 	}
+	
+	public void Reset_robota() {
+		
+		α_przegub2 = 0.0f;
+		α_przegub = 0.0f;
+		α_podstawa = 0.0f;
+		
+	}
+	
 
 	//obrot podstawy robota prawo-lewo-------------------------------------------------------------------------------//
 	public class Obrot_podstawy_robota extends Behavior{
-		private TransformGroup ref_do_tg;
-		private Transform3D obrot=new Transform3D();
-		private float kat;
+		
+		
+		
 
 		Obrot_podstawy_robota(TransformGroup th){
-			this.ref_do_tg=th;
+			
 		}
 		@Override
 		public void initialize() {
@@ -422,14 +424,12 @@ public class Ramie extends JFrame {
 		}
 		@Override
 		public void processStimulus(Enumeration enmrtn) {
-			if(klawisze[0]&&(kat<3.14)) {
-				kat+=0.03f;
+			if(klawisze[0]&&(α_podstawa<3.14)) 
 				α_podstawa += 0.03f;
-				}
-			if(klawisze[2]&&(kat>-3.14)) {
-				kat-=0.03f;
+				
+			if(klawisze[2]&&(α_podstawa>-3.14)) 
 				α_podstawa -=0.03f;
-				}
+				
 			
 			this.wakeupOn(new WakeupOnAWTEvent(KeyEvent.KEY_PRESSED));
 		}
@@ -437,12 +437,10 @@ public class Ramie extends JFrame {
 
 	//obrot ramienia 2 robota góra-dół--------------------------------------------------------------------------------//
 	public class Obrot_ramienia_2 extends Behavior{
-		private TransformGroup ref_do_tg;
-		private Transform3D obrot=new Transform3D();
-		private float kat;
+		
 
 		Obrot_ramienia_2 (TransformGroup th){
-			this.ref_do_tg=th;
+			
 		}
 		@Override
 		public void initialize() {
@@ -450,16 +448,12 @@ public class Ramie extends JFrame {
 		}
 		@Override
 		public void processStimulus(Enumeration enmrtn) {
-			if(klawisze[3]&&(kat<2.85)) {
-				kat+=0.03f;
+			if(klawisze[3]&&(α_przegub<2.85)) 
 				 α_przegub +=0.03f;
-				}
-			if(klawisze[5]&&(kat>-2.85)) {
-				kat-=0.03f;
+				
+			if(klawisze[5]&&(α_przegub>-2.85)) 
 				α_przegub -=0.03f;
-				}
-			
-
+				
 			this.wakeupOn(new WakeupOnAWTEvent(KeyEvent.KEY_PRESSED));
 		}
 
@@ -469,13 +463,9 @@ public class Ramie extends JFrame {
 
 	/// Obrót pierwszego ramienia robota góra-dół-----------------------------------///
 	public class Obrot_ramienia extends Behavior{
-		private TransformGroup ref_do_tg;
-		private Transform3D obrot=new Transform3D();
-
-		private float kat;
+		
 
 		Obrot_ramienia(TransformGroup th){
-			this.ref_do_tg = th;
 
 
 		}
@@ -485,16 +475,12 @@ public class Ramie extends JFrame {
 		}
 		@Override
 		public void processStimulus(Enumeration enmrtn) {
-			if(klawisze[1]&&(kat<3.14)) {
-				kat+=0.03f;
-				 α_przegub2 += 0.03f;
-				}
-			if(klawisze[4]&&(kat>-3.14)) {
-				kat-=0.03f;
-				α_przegub2 -= 0.03f;
-				}
-
+			if(klawisze[1]&&(α_przegub2<3.14)) 
+				α_przegub2 += 0.03f;
 			
+			if(klawisze[4]&&(α_przegub2>-3.14)) 
+				α_przegub2 -= 0.03f;
+				
 			this.wakeupOn(new WakeupOnAWTEvent(KeyEvent.KEY_PRESSED));
 		}
 	}
@@ -503,7 +489,7 @@ public class Ramie extends JFrame {
 		
 		private TransformGroup tg1;
 		private TransformGroup tg2;
-		private BranchGroup chuj;
+		
 
 		Grabbed(TransformGroup th1,TransformGroup th2){
 			this.tg1 = th1;
@@ -516,15 +502,8 @@ public class Ramie extends JFrame {
 		}
 		@Override
 		public void processStimulus(Enumeration enmrtn) {
-			if(klawisze[6]) {
-				
-				//tg1.addChild(tg2);
-				System.out.println("elo");
-			}
-			else {
-				
-				//tg1.removeChild(tg2);
-			}
+			
+			
 			this.wakeupOn(new WakeupOnAWTEvent(KeyEvent.KEY_PRESSED));
 		}
 	}
@@ -609,7 +588,7 @@ public class Ramie extends JFrame {
 	                this.α_przegub = α_przegub;
 	                this.α_przegub2 = α_przegub2;
 	                this.przenoszenie = przenoszenie;
-	                System.out.println("Pozycja robota");
+	                
 	            }
 	                                      
 	    
@@ -625,7 +604,7 @@ public class Ramie extends JFrame {
 	                klatka = 0;
 	               
 	            }
-	            System.out.println("Odegranie ruchu");
+	            
 	            PozycjaRobota NumerKlatki = nagranie.get(klatka);
 	            α_podstawa = NumerKlatki.α_podstawa;
 	            α_przegub = NumerKlatki.α_przegub;
@@ -637,7 +616,7 @@ public class Ramie extends JFrame {
 	           
 	        }
 	    }
-	  
+	 
 	//tutaj należy ustawić pozycję początkową
 		 private class Poruszanie extends TimerTask {
 
@@ -648,11 +627,7 @@ public class Ramie extends JFrame {
 		        public void run() {
 
 		        	//if(odtworz_ruch) {
-		        	System.out.println("Poruszanie");
-		          // p_walca_2.setTranslation(new Vector3f(0.0f,α_podstawa,0.0f));
-		           //p_zaok1_ram_2.setTranslation(new Vector3f(0.0f,0.0f,α_przegub));
-		           //p_przesuniety0_ram2.setTranslation(new Vector3f(0.0f,0.0f,α_przegub2));
-		           System.out.print(α_podstawa);
+		        	
 		          obrot.rotY(α_podstawa);
 		          obrot2.rotZ(α_przegub);
 		          obrot3.rotZ(α_przegub2);
@@ -661,13 +636,6 @@ public class Ramie extends JFrame {
 		          t_zaok1_ram_2.setTransform(obrot3);
 		          t_przesunieta0_ram2.setTransform(obrot2);
 		           
-		            //chwytak.getLocalToVworld(T3d_chwytak);
-		            //przegub2.getLocalToVworld(T3d_przegub2);
-		            //Vector3f pos = new Vector3f();
-		            //T3d_chwytak.get(pos);
-		            //Vector3f ramie_pos = new Vector3f();
-		            //T3d_przegub2.get(ramie_pos);
-		        	//}
 		        }
 		    }
 
