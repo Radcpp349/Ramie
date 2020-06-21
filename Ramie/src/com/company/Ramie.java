@@ -392,20 +392,20 @@ public class Ramie extends JFrame {
 					case 'q':      klawisze[0] = true; if(α_podstawa<3.14) 
 														α_podstawa += 0.03f; break;
 														
-					case 'w':      klawisze[1] = true; if(α_przegub<2.85) 
-														α_przegub += 0.03f; break;
+					case 'w':      klawisze[1] = true; if(α_przegub2<2.85) 
+														α_przegub2 += 0.03f; break;
 														
 					case 'e':      klawisze[2] = true; if(α_podstawa>-3.14) 
 														α_podstawa -= 0.03f;break;
 														
-					case 'a':      klawisze[3] = true; if(α_przegub2>-2.85) 
+					case 'a':      klawisze[3] = true; if(α_przegub<2.85) 
+														α_przegub += 0.03f; break;
+														
+					case 's':      klawisze[4] = true; if(α_przegub2>-2.85) 
 														α_przegub2 -= 0.03f; break;
 														
-					case 's':      klawisze[4] = true; if(α_przegub>-2.85) 
+					case 'd':      klawisze[5] = true; if(α_przegub>-2.85) 
 														α_przegub -= 0.03f; break;
-														
-					case 'd':      klawisze[5] = true; if(α_przegub2<2.85) 
-														α_przegub2 += 0.03f; break;
 														
 					//recording
 					case 'm':	   { CzyNagrywa = true;
