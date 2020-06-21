@@ -27,8 +27,6 @@ import com.sun.j3d.utils.image.TextureLoader;
 
 
 
-
-
 public class Ramie extends JFrame {
 
 	private boolean klawisze[];
@@ -45,17 +43,18 @@ public class Ramie extends JFrame {
     public float pozycjaX = 0.0f;
     public float pozycjaY = 0.0f;
     public float pozycjaZ = 0.0f;
-    
-    
-	  // katy przesunięć robota
+        
+	// katy przesunięć robota
     private float α_podstawa = 0f; // kąt przesunięcia bazy robota
     private float α_przegub = 0f; // kat przesuniecia ramienia1
     private float α_przegub2 = 0f;
-	
+	    
+    private Vector3f positionramie = new Vector3f();
+    private Vector3f position = new Vector3f();
+    
     ArrayList <PozycjaRobota> nagranie = new ArrayList<PozycjaRobota>();
     int klatka = 0;
-             
-    
+                 
     private Sphere sphere2;
     private Sphere KulaDolna;
     private Box ram2;
@@ -67,28 +66,36 @@ public class Ramie extends JFrame {
     private TransformGroup t_zaok1_ram_2 = new TransformGroup (p_zaok1_ram_2);
     private TransformGroup t_walca_2 = new TransformGroup (p_walca_2);
    
-    private Transform3D p_sphere2;
-    private TransformGroup t_sphere2;
-    //private Transform3D  p_KuliDolnej   = new Transform3D();
-    //private TransformGroup transformacja_s2 = new TransformGroup(p_KuliDolnej);
-    private TransformGroup transformacja_s2;
-    private Transform3D  p_KuliDolnej;
+    private Transform3D p_sphere2 = new Transform3D();
+    private TransformGroup t_sphere2 = new TransformGroup(p_sphere2);
+    private Transform3D  p_KuliDolnej   = new Transform3D();
+    private TransformGroup transformacja_s2 = new TransformGroup(p_KuliDolnej);
+    //private TransformGroup transformacja_s2;
+    //private Transform3D  p_KuliDolnej;
     
 	public Ramie(){
 
 		this.klawisze = new boolean[6];
+		Appearance  wygladChwytak = new Appearance();
+
+		Texture texChwytak= new TextureLoader( "blacha.jpeg", this).getTexture();
+		if (texChwytak != null)
+		{wygladChwytak.setTexture(texChwytak); }
+		this.sphere2 = new Sphere(0.6f,Primitive.GENERATE_TEXTURE_COORDS | Primitive.GENERATE_NORMALS | Primitive.GENERATE_NORMALS_INWARD, wygladChwytak);
+		
+		Appearance  wygladRamienia2 = new Appearance();
+
+		Texture texRamie2 = new TextureLoader( "blacha.jpeg", this).getTexture();
+		if (texRamie2 != null)
+		{wygladRamienia2.setTexture(texRamie2); }
+		this.ram2 = new Box(2.8f, 0.6f, 0.18f,Primitive.GENERATE_TEXTURE_COORDS | Primitive.GENERATE_NORMALS | Primitive.GENERATE_NORMALS_INWARD, wygladRamienia2);
 		//zapamiętywanie pozycji robota
 		 //zegar aby odświeżać ekran
         zegar.scheduleAtFixedRate(new Poruszanie(), 0, 10);
         new Timer().scheduleAtFixedRate(new OdegranieRuchu(), 50, 50);
         
-	   
 	}
-	
-	
-
-	 
-	
+		
 	BranchGroup Robot() {
 
 		BranchGroup wezel_scena = new BranchGroup();
@@ -281,13 +288,13 @@ public class Ramie extends JFrame {
 		t_przesunieta2_ram2.setBounds(new BoundingBox(new Point3d(0.0d,3.2d, 0.0d), new Point3d(5.0d ,3.6d, 0.4d)));
 		
 		
-		Appearance  wygladChwytak = new Appearance();
+		/*Appearance  wygladChwytak = new Appearance();
 
 		Texture texChwytak= new TextureLoader( "blacha.jpeg", this).getTexture();
 		if (texChwytak != null)
-		{wygladChwytak.setTexture(texChwytak); }
+		{wygladChwytak.setTexture(texChwytak); }*/
 
-		sphere2 = new Sphere(0.6f,Primitive.GENERATE_TEXTURE_COORDS | Primitive.GENERATE_NORMALS | Primitive.GENERATE_NORMALS_INWARD, wygladChwytak);
+		//sphere2 = new Sphere(0.6f,Primitive.GENERATE_TEXTURE_COORDS | Primitive.GENERATE_NORMALS | Primitive.GENERATE_NORMALS_INWARD, wygladChwytak);
 		
 		p_sphere2 = new Transform3D();
 		p_sphere2.setTranslation(new Vector3f(3.0f, 0.f, 0.0f));
@@ -304,15 +311,14 @@ public class Ramie extends JFrame {
 		if (texObiekt1 != null)
 		{wygladObiektu.setTexture(texObiekt1); }
 
-		KulaDolna = new Sphere(1.6f,Primitive.GENERATE_TEXTURE_COORDS | Primitive.GENERATE_NORMALS | Primitive.GENERATE_NORMALS_INWARD, wygladObiektu);		
-		
 		pozycjaX = 11.4f;
         pozycjaY = 1.8f;
         pozycjaZ = 0.3f;
         
+		KulaDolna = new Sphere(1.6f,Primitive.GENERATE_TEXTURE_COORDS | Primitive.GENERATE_NORMALS | Primitive.GENERATE_NORMALS_INWARD, wygladObiektu);		
+		       
         p_KuliDolnej   = new Transform3D();
-       
-		p_KuliDolnej.set(new Vector3f(pozycjaX,pozycjaY,pozycjaZ));
+  		p_KuliDolnej.set(new Vector3f(pozycjaX,pozycjaY,pozycjaZ));
 		transformacja_s2 = new TransformGroup(p_KuliDolnej);
 		transformacja_s2.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
 		
@@ -341,9 +347,9 @@ public class Ramie extends JFrame {
 
 		Point3d point = new Point3d(11.4d, 1.8d, 0.3d); ///Zmieniłem!!!
 
-		KulaDolna.setBounds(new BoundingSphere(point, 0.1d));
+		/*KulaDolna.setBounds(new BoundingSphere(point, 0.1d));
 		Coll coll = new Coll(KulaDolna, KulaDolna.getBounds());
-		wezel_scena.addChild(coll);
+		wezel_scena.addChild(coll);*/
 
 		/* do nagrywania, nie działa bo to kurwa jebana
 		Matrix3f matrix = new Matrix3f();
@@ -567,10 +573,7 @@ public class Ramie extends JFrame {
 		}
 	}
 
-	/**
-	 *
-	 * @author sawyera.2016
-	 */
+	
 	public class Coll extends Behavior {
 		/** The separate criteria used to wake up this beahvior. */
 		protected WakeupCriterion[] theCriteria;
@@ -682,6 +685,7 @@ public class Ramie extends JFrame {
 			 	Transform3D obrot = new Transform3D();
 			 	Transform3D obrot2 = new Transform3D();
 			 	Transform3D obrot3 = new Transform3D();
+			 	Transform3D kula3D = new Transform3D();
 		        @Override
 		        public void run() {
 
@@ -696,36 +700,31 @@ public class Ramie extends JFrame {
 		          t_przesunieta0_ram2.setTransform(obrot2);
 		          
 		          
-		          /*transformacja_s2.setTransform(p_KuliDolnej);
+		          
+		          System.out.println("Poruszanie");
+		          transformacja_s2.setTransform(kula3D);
 		          sphere2.getLocalToVworld(p_sphere2);
 		          ram2.getLocalToVworld(p_przesuniety0_ram2);
-		          Vector3f position = new Vector3f();
+		          
 		          p_sphere2.get(position);
-		          Vector3f positionramie = new Vector3f();
 		          p_przesuniety0_ram2.get(positionramie);
-		           
+		           		         
 		          if (przenoszenie) {
-
 		                float f1 = 1.17f;
 		                float f2 = 0.17f;
 
 		                pozycjaX = position.x * f1 - f2 * positionramie.x;
 		                pozycjaY = position.y * f1 - f2 * positionramie.y;
 		                pozycjaZ = position.z * f1 - f2 * positionramie.z;
-		                p_KuliDolnej.setTranslation(new Vector3f(pozycjaX, pozycjaY, pozycjaZ));
+		                kula3D.set(new Vector3f(pozycjaX, pozycjaY, pozycjaZ));
 
 		            } else {
 		                if (pozycjaY > 0.3) {
 		                    pozycjaY -= 0.02f;
-		                    p_KuliDolnej.setTranslation(new Vector3f(pozycjaX, pozycjaY, pozycjaZ));
+		                    kula3D.set(new Vector3f(pozycjaX, pozycjaY, pozycjaZ));
 
-		                }
-		          
-		          
-		        }*/
-		        
-		        
-		        
-		    }
-		 }
+		                	}
+		              }
+		        }
+		  }
 }
