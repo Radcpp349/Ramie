@@ -26,9 +26,10 @@ import com.sun.j3d.utils.image.TextureLoader;
 
 
 
-
+// Główna klasa obsługi programu
 public class Ramie extends JFrame {
 
+	/*Zmienne pomocnicze, odpowiedzialne za poszczególne funkcje*/
 	private boolean klawisze[];
     private Timer zegar = new Timer(); 
     private boolean CzyNagrywa = false;
@@ -36,23 +37,26 @@ public class Ramie extends JFrame {
     private boolean odtworz_ruch = false;
     private boolean CzyDzwiek = true;
     
-    //Przesuwanie kostki
-    public float pozycjaX = 0.0f;
-    public float pozycjaY = 0.0f;
-    public float pozycjaZ = 0.0f;
+    //Przesuwanie obiektu
+    public float coordX = 0.0f;
+    public float coordY = 0.0f;
+    public float coordZ = 0.0f;
         
-	// katy przesunięć robota
-    private float α_podstawa = 0f; // kąt przesunięcia bazy robota
-    private float α_przegub = 0f; // kat przesuniecia ramienia1
-    private float α_przegub2 = 0f;
+	// katy rotacji części robota
+    private float rot_podstawy = 0f; // kąt przesunięcia bazy robota
+    private float rot_przedramienia = 0f; // kat przesuniecia ramienia1
+    private float rot_ramienia = 0f;
     
+    // Lista położeń robota do odtwarzania "nagrania"
     ArrayList <PozycjaRobota> nagranie = new ArrayList<PozycjaRobota>();
-    int klatka = 0;
-                 
+    int czas = 0;
+    
+    // Obiekty na które wpływa program             
     private Sphere sphere2;
     private Sphere KulaDolna;
     private Box ram2;
     
+    // Transformaty obiektów
     private Transform3D p_walca_2 = new Transform3D();
     private Transform3D p_zaok1_ram_2 = new Transform3D();
     private Transform3D p_przesuniety0_ram2 = new Transform3D();
@@ -65,9 +69,12 @@ public class Ramie extends JFrame {
     private Transform3D  p_KuliDolnej   = new Transform3D();
     private TransformGroup transformacja_s2 = new TransformGroup(p_KuliDolnej);
     
+    
+    // Konstruktor
 	public Ramie(){
 
 		this.klawisze = new boolean[6];
+		//tworzenie obiektów i nakładanie tekstur//
 		Appearance  wygladChwytak = new Appearance();
 
 		Texture texChwytak= new TextureLoader( "blacha.jpeg", this).getTexture();
@@ -81,36 +88,25 @@ public class Ramie extends JFrame {
 		if (texRamie2 != null)
 		{wygladRamienia2.setTexture(texRamie2); }
 		this.ram2 = new Box(2.8f, 0.6f, 0.18f,Primitive.GENERATE_TEXTURE_COORDS | Primitive.GENERATE_NORMALS | Primitive.GENERATE_NORMALS_INWARD, wygladRamienia2);
-		//zapamiętywanie pozycji robota
-		 //zegar aby odświeżać ekran
+		
+		//zapamiętywanie pozycji robota//
+		//zegar do odświeżania ekranu//
+		
         zegar.scheduleAtFixedRate(new Poruszanie(), 0, 10);
         new Timer().scheduleAtFixedRate(new OdegranieRuchu(), 50, 50);
         
 	}
-		
+	
+	//Główna funkcja programu, odpowiezdzialna za stworzenie a następnie "aktualizowanie" robota//
 	BranchGroup Robot() {
 
 		BranchGroup wezel_scena = new BranchGroup();
-
-		/* ustawiamy materiały, póiej zmiana w tekstury--------------------------------------------*/
-		Material zielonkawy = new Material();
-		zielonkawy.setDiffuseColor(0.9f,0.3f,0.3f);
-		zielonkawy.setEmissiveColor(0.0f,0.5f,0.1f);
-		zielonkawy.setSpecularColor(0.2f,0.1f,0.1f);
-		zielonkawy.setShininess(50f);
-
-		Material niebieski = new Material();
-		niebieski.setDiffuseColor(0.0f, 0.0f, 1.0f);
-		niebieski.setEmissiveColor(0.28f,0.0f,0.5f);
-		niebieski.setSpecularColor(0.2f,0.1f,0.1f);
-		niebieski.setShininess(50f);
-
+		
+		//Początkowe transformacje służące stworzeniu robota
 		Transform3D p_gen = new Transform3D();
 		p_gen.setTranslation(new Vector3f(-4.0f, -4.0f, 0.0f));
 		TransformGroup t_gen = new TransformGroup (p_gen);
 		t_gen.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
-
-		///KOD TESTOWY OD KAMILA, TRZEBA POUSTAWIAĆ
 
 		//podstawa------------------------------------------------------------------------//
 		Appearance  wygladPodstawy = new Appearance();
@@ -129,7 +125,7 @@ public class Ramie extends JFrame {
 		t_podstawy.addChild(podstawa);
 		t_gen.addChild(t_podstawy);
 
-		//walec ruchomy-----------------------------------------------------------//
+		//Podstawa ruchoma robota, walec, tworzenie odpowiednich transformacji i dodawanie ich do robota//
 		Appearance  wygladCylindra = new Appearance();
 
 		Texture texWalec = new TextureLoader( "blacha2.jpeg", this).getTexture();
@@ -148,7 +144,7 @@ public class Ramie extends JFrame {
 		t_podstawy.addChild(t_walca_2);
 		t_walca.addChild(walec);
 
-		//Zakonczenie walca ---------------------------------------------------------//
+		//Zakonczenie walca, zaaokrąglenie końcówki, poprawa wizualna ---------------------------------------------------------//
 		Sphere sphere1 = new Sphere(0.8f,Primitive.GENERATE_TEXTURE_COORDS | Primitive.GENERATE_NORMALS | Primitive.GENERATE_NORMALS_INWARD,wygladCylindra);
 		Transform3D p_sphere1 = new Transform3D();
 		p_sphere1.setTranslation(new Vector3f(0.0f, 3.7f, 0.0f));
@@ -156,7 +152,7 @@ public class Ramie extends JFrame {
 		t_sphere1.addChild(sphere1);
 		t_walca.addChild(t_sphere1);
 
-		//ramię----------------------------------------------------------------------//
+		//ramię robota, nałożenie tekstur, utworzenie transformaci i dodanie do podstawy robota//
 
 		Appearance  wygladRamienia1 = new Appearance();
 		Texture texRamie1 = new TextureLoader( "blacha.jpeg", this).getTexture();
@@ -165,6 +161,7 @@ public class Ramie extends JFrame {
 
 		Cylinder zaok1_ram = new Cylinder(0.6f, 1.36f, Primitive.GENERATE_TEXTURE_COORDS | Primitive.GENERATE_NORMALS | Primitive.GENERATE_NORMALS_INWARD,wygladRamienia1);
 
+		//Dodanie pomocniczych transformacji, w celu poprawnego działania obrotów //
 		Transform3D p_zaok1_ram = new Transform3D();
 		p_zaok1_ram.setTranslation(new Vector3f(0.0f, 3.2f, 1.3f));
 		TransformGroup t_zaok1_ram = new TransformGroup (p_zaok1_ram);
@@ -181,8 +178,9 @@ public class Ramie extends JFrame {
 		t_zaok1_ram_2.addChild(t_zaok1_ram_3);
 
 		t_zaok1_ram_3.addChild(zaok1_ram);
-
-		Box ram = new com.sun.j3d.utils.geometry.Box(2.8f, 0.6f, 0.18f,Primitive.GENERATE_TEXTURE_COORDS | Primitive.GENERATE_NORMALS | Primitive.GENERATE_NORMALS_INWARD, wygladRamienia1);
+		
+		//Stworzenie ramienia i dodanie mu odpowiednich transformacji //
+		Box ram = new Box(2.8f, 0.6f, 0.18f,Primitive.GENERATE_TEXTURE_COORDS | Primitive.GENERATE_NORMALS | Primitive.GENERATE_NORMALS_INWARD, wygladRamienia1);
 
 		Transform3D p_przesuniety1_ram = new Transform3D();
 		p_przesuniety1_ram.setTranslation(new Vector3f(2.0f, 0.0f, 0.5f));
@@ -204,7 +202,7 @@ public class Ramie extends JFrame {
 
 		t_przesunieta2_ram.addChild(ram);
 		
-		//przedramię----------------------------------------------------------------------//
+		//Stworzenie przedramięnia----------------------------------------------------------------------//
 		Appearance  wygladRamienia2 = new Appearance();
 
 		Texture texRamie2 = new TextureLoader( "blacha.jpeg", this).getTexture();
@@ -229,7 +227,7 @@ public class Ramie extends JFrame {
 
 		t_przesunieta2_ram2.addChild(ram2);
 
-		//zaokrąglenie przedramienia------------------------------------------------------------//
+		//zaokrąglenie przedramienia, poprawa wizualna------------------------------------------------------------//
 		Sphere zaok1_ram2 = new Sphere(0.65f,Primitive.GENERATE_TEXTURE_COORDS | Primitive.GENERATE_NORMALS | Primitive.GENERATE_NORMALS_INWARD, wygladRamienia1);
 		Transform3D p_zaok1_ram2 = new Transform3D();
 		p_zaok1_ram2.setTranslation(new Vector3f(-2.8f, 0.0f, -0.4f));
@@ -247,29 +245,31 @@ public class Ramie extends JFrame {
 		t_sphere2.addChild(sphere2);
 		t_przesunieta2_ram2.addChild(t_sphere2);
 
-
+		//Dodanie robota do głównego brancha wywoływanego w World.java //
 		wezel_scena.addChild(t_gen);
-		//KULA DOLNA (nieruchoma)--------------------------------------------------zmieniłem!!!//
+		
+		//KULA DOLNA, obiekt którym możemy manipulować za pomocą robota--------------------------------------------------//
 		Appearance  wygladObiektu= new Appearance();
 		Texture texObiekt1 = new TextureLoader( "ball.jpeg", this).getTexture();
 		if (texObiekt1 != null)
 		{wygladObiektu.setTexture(texObiekt1); }
-
-		pozycjaX = 11.4f;
-        pozycjaY = 1.8f;
-        pozycjaZ = 0.3f;
+		
+		//Początkowe położenie kuli //
+		coordX = 11.4f;
+        coordY = 1.8f;
+        coordZ = 0.3f;
         
 		KulaDolna = new Sphere(1.6f,Primitive.GENERATE_TEXTURE_COORDS | Primitive.GENERATE_NORMALS | Primitive.GENERATE_NORMALS_INWARD, wygladObiektu);		
 		       
         p_KuliDolnej   = new Transform3D();
-  		p_KuliDolnej.set(new Vector3f(pozycjaX,pozycjaY,pozycjaZ));
+  		p_KuliDolnej.set(new Vector3f(coordX,coordY,coordZ));
 		transformacja_s2 = new TransformGroup(p_KuliDolnej);
 		transformacja_s2.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
 		
 		transformacja_s2.addChild(KulaDolna);
 		t_gen.addChild(transformacja_s2);
 
-		///KONIEC KODU
+		///KONIEC KODU RAMIENIA ROBOTA
 
 		Point3d point = new Point3d(11.4d, 1.8d, 0.3d); ///Zmieniłem!!!
 
@@ -278,63 +278,46 @@ public class Ramie extends JFrame {
 		wezel_scena.addChild(coll);
 		
 		return wezel_scena;
-		
-		/*
-		 * żebym nie zapomniał
-		 * jutro zmienić collision, pobierać pozycję kulki i podłogi i jeśli robot na to najedzie to mu zabraniać,
-		 * zamiast sfery zrobić boxa/cuba, będzie łatwiej blokować ruch
-		 * 
-		 * względem nagrywania po prostu odtworzyć sekwencje ruchów, nie bawić sie w timery,
-		 * wwalić to do wektora/arraya, najlepiej jakoś z odpowiednimi ruchami tj.
-		 * który się poruszył i w którą stronę
-		 * 
-		 * wyswietlac napis ktory powie czy mozemy zlapac kostke czy nie
-		 * addchild i wgl do kostki
-		 * */
 
 	}
-	
-	
-	
-	
-	
-
+		
+	/*Key listener programu wyczekujący na input użytkownika(wciśnięcie odpowiedniego przycisku na klawiaturze*/
 	public Canvas3D canv_KeyListener(Canvas3D canvas3D) {
-
-
 
 		canvas3D.addKeyListener(new KeyListener(){
 			public void keyPressed(KeyEvent e){
 				
+				//warunek sprawdzający czy progra ma nagrywac ruchy robota
 				if (CzyNagrywa) {
-	                nagranie.add(new PozycjaRobota(α_podstawa, α_przegub, α_przegub2, przenoszenie));
+	                nagranie.add(new PozycjaRobota(rot_podstawy, rot_przedramienia, rot_ramienia, przenoszenie));
 	            }
-				//jesli to zniknie to wrociles do swojego programu debilu
+				
 				switch(e.getKeyChar()){
-					case 'q':      klawisze[0] = true; if(α_podstawa<3.14) 
-														α_podstawa += 0.03f; break;
+					//Klawisze odpowiedzialne za ruch robota
+					case 'q':       if(rot_podstawy<3.14) 
+									 rot_podstawy += 0.03f; break;
 														
-					case 'w':      klawisze[1] = true; if(α_przegub2<2.85) 
-														α_przegub2 += 0.03f; break;
+					case 'w':       if(rot_ramienia<2.85) 
+									 rot_ramienia += 0.03f; break;
 														
-					case 'e':      klawisze[2] = true; if(α_podstawa>-3.14) 
-														α_podstawa -= 0.03f;break;
+					case 'e':       if(rot_podstawy>-3.14) 
+									 rot_podstawy -= 0.03f;break;
 														
-					case 'a':      klawisze[3] = true; if(α_przegub<1.05) 
-														α_przegub += 0.03f; break;
+					case 'a':       if(rot_przedramienia<1.05) 
+									 rot_przedramienia += 0.03f; break;
 
-					case 's':    if(blokada()){α_przegub2 += 0.03f;}
-						klawisze[4] = true; if(α_przegub2>-2.85)
-						α_przegub2 -= 0.03f; break;
+					case 's':       if(blokada()){rot_ramienia += 0.03f;}
+								    if(rot_ramienia>-2.85)
+								     rot_ramienia -= 0.03f; break;
 
-					case 'd':      if(blokada()){α_przegub += 0.03f;}
-						klawisze[5] = true; if(α_przegub>-2.85)
-						α_przegub -= 0.03f; break;
+					case 'd':      if(blokada()){rot_przedramienia += 0.03f;}
+						 		   if(rot_przedramienia>-2.85)
+						 			 rot_przedramienia -= 0.03f; break;
 														
-					//recording
+					//Klawisze odpowiedzialne za nagrywanie, odtwarzanie, reset robota, oraz podnoszenie obiektu //
 					case 'm':	   { CzyNagrywa = true;
      			   					nagranie.clear();
-     			   					klatka = 0;
+     			   					czas = 0;
      			   					System.out.println("nagrywanie "); break;}
 					case 'n':       {CzyNagrywa = false;
 									odtworz_ruch = true; 
@@ -348,12 +331,12 @@ public class Ramie extends JFrame {
 
 			public void keyReleased(KeyEvent e){
 				switch(e.getKeyChar()){
-					case 'q':    klawisze[0] = false; break;
-					case 'w':    klawisze[1] = false; break;
-					case 'e':    klawisze[2] = false; break;
-					case 'a':    klawisze[3] = false; break;
-					case 's':    klawisze[4] = false; break;
-					case 'd':    klawisze[5] = false; break;
+					case 'q':    break;
+					case 'w':    break;
+					case 'e':    break;
+					case 'a':    break;
+					case 's':    break;
+					case 'd':    break;
 				}
 			}
 
@@ -365,31 +348,36 @@ public class Ramie extends JFrame {
 		return canvas3D;
 	}
 	
+	//metoda resetująca położenie robota do położenia początkowego //
 	public void Reset_robota(){
 
-        α_przegub2 = 0.0f;
-        α_przegub = 0.0f;
-        α_podstawa = 0.0f;
+        rot_ramienia = 0.0f;
+        rot_przedramienia = 0.0f;
+        rot_podstawy = 0.0f;
 
     }
-
+	
+	// Włączenie nagrywania //
     public void nagrywajmy(){
     	CzyNagrywa = true;
         nagranie.clear();
-        klatka = 0;
+        czas = 0;
         System.out.println("nagrywanie ");
         }
-
+    
+    //Włączenie odtwarzania //
     public void odtwarzajmy(){
         CzyNagrywa = false;
         odtworz_ruch = true;
         System.out.println("Odtwarzanie");
     }
-
+    
+    //Zatrzymanie odtwarzania //
     public void koniec_odtwarzania(){
         odtworz_ruch = !odtworz_ruch; 
         System.out.println("Stop odtwarzania");
     }
+    //blokada ruchu robota //
 	public boolean blokada()
 	{Vector3f positionprzedramie = new Vector3f();
 		p_sphere2.get(positionprzedramie);
@@ -399,6 +387,7 @@ public class Ramie extends JFrame {
 	}
 	
 
+	/*Wykrywanie kolizji */
 	
 	public class Coll extends Behavior {
 		/** The separate criteria used to wake up this beahvior. */
@@ -465,7 +454,7 @@ public class Ramie extends JFrame {
 			}
 	}
 	
-	
+	/*Klasa odpowiedzialna za pobieranie aktualnej pozycji robota do nagrania w celu odtworzenia ruchu*/
 	 class PozycjaRobota {
 	        
 	        float α_podstawa;
@@ -484,28 +473,29 @@ public class Ramie extends JFrame {
 	    
 	    }
 	  
+	 /*Klasa odgrywająca ruch robota*/
 	  class OdegranieRuchu extends TimerTask {
 
 	        @Override
 	        public void run() {
 	            if (!odtworz_ruch || nagranie.isEmpty())
 	                return;
-	            if (klatka >= nagranie.size()){
-	                klatka = 0;
+	            if (czas >= nagranie.size()){
+	                czas = 0;
 	               
 	            }
 	            
-	            PozycjaRobota NumerKlatki = nagranie.get(klatka);
-	            α_podstawa = NumerKlatki.α_podstawa;
-	            α_przegub = NumerKlatki.α_przegub;
-	            α_przegub2 = NumerKlatki.α_przegub2;
+	            PozycjaRobota NumerKlatki = nagranie.get(czas);
+	            rot_podstawy = NumerKlatki.α_podstawa;
+	            rot_przedramienia = NumerKlatki.α_przegub;
+	            rot_ramienia = NumerKlatki.α_przegub2;
 	            przenoszenie = NumerKlatki.przenoszenie; 
-	            klatka++;
+	            czas++;
 	            	           
 	        }
 	    }
 	 
-	//tutaj należy ustawić pozycję początkową
+	/*Klasa odpowiedzialna za ruch robota, główna funkcja, działa cały czas i "monitoruje" zmiany w położeniu robota oraz obiektu*/
 		 private class Poruszanie extends TimerTask {
 
 			 	Transform3D obrot = new Transform3D();
@@ -515,18 +505,17 @@ public class Ramie extends JFrame {
 		        @Override
 		        public void run() {
 
-		        	//if(odtworz_ruch) {
-		        	
-		          obrot.rotY(α_podstawa);
-		          obrot2.rotZ(α_przegub);
-		          obrot3.rotZ(α_przegub2);
+		        	//Obroty robota //
+		          obrot.rotY(rot_podstawy);
+		          obrot2.rotZ(rot_przedramienia);
+		          obrot3.rotZ(rot_ramienia);
 		          
 		          t_walca_2.setTransform(obrot);
 		          t_zaok1_ram_2.setTransform(obrot3);
 		          t_przesunieta0_ram2.setTransform(obrot2);
 		          
 		         
-		          
+		          // Położenie kuli(obiektu) //
 		          transformacja_s2.setTransform(kula3D);
 		          sphere2.getLocalToVworld(p_sphere2);
 		          ram2.getLocalToVworld(p_przesuniety0_ram2);
@@ -534,22 +523,23 @@ public class Ramie extends JFrame {
 		          p_sphere2.get(position);
 		          Vector3f positionramie = new Vector3f();
 		          p_przesuniety0_ram2.get(positionramie);
-		           		         
+		           
+		          //Kod odpowiedzialny za ruch obiektu po złapaniu go chwytakiem robota //
 		          if (przenoszenie) {
 		               
 		        	    float f2 = 0.24f;
 		        	    float f1 = 0.22f;
 		        	    float f3 = 0.18f;
 		        	    
-		        	    pozycjaX = position.x + 5.9f - f1 * (4.19631f - positionramie.x);
-		        	    pozycjaY = position.y + 3.9f -  f2 * (2.9459631f - positionramie.y);
-		        	    pozycjaZ = position.z - f3 * (2.6999998f - positionramie.z);
-		                kula3D.setTranslation(new Vector3f(pozycjaX, pozycjaY, pozycjaZ));
+		        	    coordX = position.x + 5.9f - f1 * (4.19631f - positionramie.x);
+		        	    coordY = position.y + 3.9f -  f2 * (2.9459631f - positionramie.y);
+		        	    coordZ = position.z - f3 * (2.6999998f - positionramie.z);
+		                kula3D.setTranslation(new Vector3f(coordX, coordY, coordZ));
 
 		            } else {
-		                if (pozycjaY > 1.74f) {
-		                    pozycjaY -= 0.04f;
-		                    kula3D.setTranslation(new Vector3f(pozycjaX, pozycjaY, pozycjaZ));
+		                if (coordY > 1.74f) {
+		                    coordY -= 0.04f;
+		                    kula3D.setTranslation(new Vector3f(coordX, coordY, coordZ));
 
 		                	}
 		              }
