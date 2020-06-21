@@ -531,8 +531,7 @@ public class Ramie extends JFrame {
 		          if (przenoszenie) {
 		                /*float f1 = 2.89f;
 		                float f2 = 1.04f;
-		                
-		               
+		                		               
 		                System.out.print(positionramie);
 		                
 		                pozycjaX = position.x * f1 - f2 * positionramie.x;
@@ -543,7 +542,7 @@ public class Ramie extends JFrame {
 		        	    pozycjaX = position.x;
 		        	    pozycjaY = position.y;
 		        	    pozycjaZ = position.z;
-		                kula3D.setTranslation(new Vector3f(pozycjaX+0.8f, pozycjaY+0.8f, pozycjaZ));
+		                kula3D.setTranslation(new Vector3f(pozycjaX+5.9f, pozycjaY+3.9f, pozycjaZ));
 
 		            } else {
 		                if (pozycjaY > 1.79f) {
