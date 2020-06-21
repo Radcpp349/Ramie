@@ -322,12 +322,14 @@ public class Ramie extends JFrame {
 														
 					case 'a':      klawisze[3] = true; if(α_przegub<1.05) 
 														α_przegub += 0.03f; break;
-														
-					case 's':      klawisze[4] = true; if(α_przegub2>-2.85) 
-														α_przegub2 -= 0.03f; break;
-														
-					case 'd':      klawisze[5] = true; if(α_przegub>-1.05) 
-														α_przegub -= 0.03f; break;
+
+					case 's':    if(blokada()){α_przegub2 += 0.03f;}
+						klawisze[4] = true; if(α_przegub2>-2.85)
+						α_przegub2 -= 0.03f; break;
+
+					case 'd':      if(blokada()){α_przegub += 0.03f;}
+						klawisze[5] = true; if(α_przegub>-2.85)
+						α_przegub -= 0.03f; break;
 														
 					//recording
 					case 'm':	   { CzyNagrywa = true;
@@ -388,6 +390,13 @@ public class Ramie extends JFrame {
         odtworz_ruch = !odtworz_ruch; 
         System.out.println("Stop odtwarzania");
     }
+	public boolean blokada()
+	{Vector3f positionprzedramie = new Vector3f();
+		p_sphere2.get(positionprzedramie);
+		if(positionprzedramie.getY()<=-3.0f){return true;}
+
+		return false;
+	}
 	
 
 	
