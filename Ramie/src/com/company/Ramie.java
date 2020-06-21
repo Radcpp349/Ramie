@@ -320,13 +320,13 @@ public class Ramie extends JFrame {
 					case 'e':      klawisze[2] = true; if(α_podstawa>-3.14) 
 														α_podstawa -= 0.03f;break;
 														
-					case 'a':      klawisze[3] = true; if(α_przegub<2.85) 
+					case 'a':      klawisze[3] = true; if(α_przegub<1.05) 
 														α_przegub += 0.03f; break;
 														
 					case 's':      klawisze[4] = true; if(α_przegub2>-2.85) 
 														α_przegub2 -= 0.03f; break;
 														
-					case 'd':      klawisze[5] = true; if(α_przegub>-2.85) 
+					case 'd':      klawisze[5] = true; if(α_przegub>-1.05) 
 														α_przegub -= 0.03f; break;
 														
 					//recording
@@ -492,9 +492,7 @@ public class Ramie extends JFrame {
 	            α_przegub2 = NumerKlatki.α_przegub2;
 	            przenoszenie = NumerKlatki.przenoszenie; 
 	            klatka++;
-	            
-	            
-	           
+	            	           
 	        }
 	    }
 	 
@@ -529,25 +527,20 @@ public class Ramie extends JFrame {
 		          p_przesuniety0_ram2.get(positionramie);
 		           		         
 		          if (przenoszenie) {
-		                /*float f1 = 2.89f;
-		                float f2 = 1.04f;
-		                		               
-		                System.out.print(positionramie);
-		                
-		                pozycjaX = position.x * f1 - f2 * positionramie.x;
-		                pozycjaY = position.y * f1 - f2 * positionramie.y;
-		                pozycjaZ = position.z * f1 - f2 * positionramie.z;*/
-		        	  System.out.print(position);
-		        	  System.out.println('\n');
-		        	    pozycjaX = position.x;
-		        	    pozycjaY = position.y;
-		        	    pozycjaZ = position.z;
-		                kula3D.setTranslation(new Vector3f(pozycjaX+5.9f, pozycjaY+3.9f, pozycjaZ));
+		               
+		        	    float f2 = 0.24f;
+		        	    float f1 = 0.22f;
+		        	    float f3 = 0.18f;
+		        	    
+		        	    pozycjaX = position.x + 5.9f - f1 * (4.19631f - positionramie.x);
+		        	    pozycjaY = position.y + 3.9f -  f2 * (2.9459631f - positionramie.y);
+		        	    pozycjaZ = position.z - f3 * (2.6999998f - positionramie.z);
+		                kula3D.setTranslation(new Vector3f(pozycjaX, pozycjaY, pozycjaZ));
 
 		            } else {
-		                if (pozycjaY > 1.79f) {
+		                if (pozycjaY > 1.74f) {
 		                    pozycjaY -= 0.04f;
-		                    kula3D.setTranslation(new Vector3f(pozycjaX+0.8f, pozycjaY+0.8f, pozycjaZ));
+		                    kula3D.setTranslation(new Vector3f(pozycjaX, pozycjaY, pozycjaZ));
 
 		                	}
 		              }
