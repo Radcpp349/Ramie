@@ -316,9 +316,9 @@ public class Ramie extends JFrame {
 
 		Point3d point = new Point3d(11.4d, 1.8d, 0.3d); ///Zmieniłem!!!
 
-		KulaDolna.setBounds(new BoundingSphere(point, 0.1d));
-		Coll coll = new Coll(KulaDolna, KulaDolna.getBounds());
-		wezel_scena.addChild(coll);
+		//KulaDolna.setBounds(new BoundingSphere(point, 0.1d));
+		//Coll coll = new Coll(KulaDolna, KulaDolna.getBounds());
+		//wezel_scena.addChild(coll);
 
 		/* do nagrywania, nie działa bo to kurwa jebana
 		Matrix3f matrix = new Matrix3f();
@@ -347,7 +347,7 @@ public class Ramie extends JFrame {
 
 	}
 	
-	
+
 
 	public Canvas3D canv_KeyListener(Canvas3D canvas3D) {
 
@@ -375,7 +375,7 @@ public class Ramie extends JFrame {
 					case 'n':       {CzyNagrywa = false;
 									odtworz_ruch = true; 
 									System.out.println("Odtwarzanie"); break;}
-					case 'r':	    odtworz_ruch = !odtworz_ruch; System.out.println("Stop odtwarzania"); break;
+					case 'r':	    koniec_odtwarzania(); break;
 					case 'p':		Reset_robota(); break;
 								   
 				}
@@ -407,6 +407,20 @@ public class Ramie extends JFrame {
 		α_podstawa = 0.0f;
 		
 	}
+
+	public void nagrywajmy()
+	{CzyNagrywa = true;
+		nagranie.clear();
+		klatka = 0;
+		System.out.println("nagrywanie ");}
+
+	public void odtwarzajmy()
+	{CzyNagrywa = false;
+		odtworz_ruch = true;
+		System.out.println("Odtwarzanie");}
+
+	public void koniec_odtwarzania()
+	{odtworz_ruch = !odtworz_ruch; System.out.println("Stop odtwarzania");}
 	
 
 	//obrot podstawy robota prawo-lewo-------------------------------------------------------------------------------//
@@ -555,26 +569,29 @@ public class Ramie extends JFrame {
 		 * to the OR'ed criterion again.
 		 */
 		public void processStimulus(Enumeration criteria) {
-			WakeupCriterion theCriterion = (WakeupCriterion) criteria.nextElement();
-			if (theCriterion instanceof WakeupOnCollisionEntry) {
-				Node theLeaf = ((WakeupOnCollisionEntry) theCriterion)
-						.getTriggeringPath().getObject();
-				System.out.println("Collided with " + theLeaf.getUserData());
-			} else if (theCriterion instanceof WakeupOnCollisionExit) {
-				Node theLeaf = ((WakeupOnCollisionExit) theCriterion)
-						.getTriggeringPath().getObject();
-				System.out.println("Stopped colliding with  "
-						+ theLeaf.getUserData());
-			} else {
-				Node theLeaf = ((WakeupOnCollisionMovement) theCriterion)
-						.getTriggeringPath().getObject();
-				System.out.println("Moved whilst colliding with "
-						+ theLeaf.getUserData());
-			}
-			wakeupOn(oredCriteria);
-		}
+			if(criteria.hasMoreElements()){
+				WakeupCriterion theCriterion = (WakeupCriterion) criteria.nextElement();
+				if (theCriterion instanceof WakeupOnCollisionEntry) {
+					Node theLeaf = ((WakeupOnCollisionEntry) theCriterion)
+							.getTriggeringPath().getObject();
+					System.out.println("Collided with " + theLeaf.getUserData());
+				} else if (theCriterion instanceof WakeupOnCollisionExit) {
+					Node theLeaf = ((WakeupOnCollisionExit) theCriterion)
+							.getTriggeringPath().getObject();
+					System.out.println("Stopped colliding with  "
+							+ theLeaf.getUserData());
+				} else {
+					Node theLeaf = ((WakeupOnCollisionMovement) theCriterion)
+							.getTriggeringPath().getObject();
+					System.out.println("Moved whilst colliding with "
+							+ theLeaf.getUserData());
+				}
+				wakeupOn(oredCriteria);
+			}}
+
+
 	}
-	
+
 	
 	 class PozycjaRobota {
 	        

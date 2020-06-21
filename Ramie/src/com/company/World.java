@@ -90,7 +90,7 @@ public class World extends JFrame {
         add(canvas3D);
         pack();
         setVisible(true);
-       this.universe = new SimpleUniverse(canvas3D);
+        this.universe = new SimpleUniverse(canvas3D);
 
         BranchGroup group = CreateGroup(universe);
         BranchGroup robot = ramie.Robot();
@@ -261,15 +261,19 @@ public class World extends JFrame {
         private boolean czy_reset = false;
 
         public Buttons(){
-            this.przyciski = new JButton[4];
+            this.przyciski = new JButton[6];
             przyciski[0] = new JButton("Reset Kamery");
             przyciski[0].addActionListener(new ObslugaPrzycisku(ref_okno));
             przyciski[1] = new JButton("Nagrywanie");
             przyciski[1].addActionListener(new ObslugaPrzycisku(ref_okno));
-            przyciski[2] = new JButton("Stop nagrywania");
+            przyciski[2] = new JButton("Odtwarzanie");
             przyciski[2].addActionListener(new ObslugaPrzycisku(ref_okno));
-            przyciski[3] = new JButton("Instrukcja");
-            przyciski[3].addActionListener(new ObslugaPrzycisku(ref_okno));}
+            przyciski[3] = new JButton("Stop Odtwarzania");
+            przyciski[3].addActionListener(new ObslugaPrzycisku(ref_okno));
+            przyciski[4] = new JButton("Reset Pozycji Robota");
+            przyciski[4].addActionListener(new ObslugaPrzycisku(ref_okno));
+            przyciski[5] = new JButton("Instrukcja");
+            przyciski[5].addActionListener(new ObslugaPrzycisku(ref_okno));}
 
         private class ObslugaPrzycisku implements ActionListener {
 
@@ -281,23 +285,36 @@ public class World extends JFrame {
                 if(bt == przyciski[0])
                 {
                     przesuniecie_obserwatora.set(dystans);
-                   universe.getViewingPlatform().getViewPlatformTransform().setTransform(przesuniecie_obserwatora);
+                    universe.getViewingPlatform().getViewPlatformTransform().setTransform(przesuniecie_obserwatora);
                 }
 
                 else if (bt == przyciski[1])
-                {   System.out.println("czaczacza");}
+                {   ramie.nagrywajmy();
+                }
                 else if (bt == przyciski[2])
-                { }
+                { ramie.odtwarzajmy();
+                }
                 else if (bt == przyciski[3])
+                { ramie.koniec_odtwarzania();
+                }
+                else if (bt == przyciski[4])
+                { ramie.Reset_robota();
+                }
+                else if (bt == przyciski[5])
                 { JOptionPane.showInternalMessageDialog(ref_okno, "Schemat sterowania robotem:\n" +
                                 "Q - Obrót podstawy robota przeciwnie do ruchu wskazówek zegara (patrzac z góry) \n" +
                                 "E - Obrót podstawy robota zgdonie z ruchem wskazówek zegara (patrząc z góry) \n" +
                                 "W - Ruch ramienia w górę \n" +
                                 "S - Ruch ramienia w dół \n" +
                                 "A - Ruch przedramienia w górę \n" +
-                                "D - Ruch przedramienia w dół \n",
-                        "Instrukcja", JOptionPane.INFORMATION_MESSAGE);
-                   }
+                                "D - Ruch przedramienia w dół \n" +
+                                "P - Reset pozycji robota\n" +
+                                "\n" +
+                                "Obsługa nagrywania:\n" +
+                                "M - Rozpoczenie nagrywania\n" +
+                                "N - Stop nagrywania i odtwarzanie\n" +
+                                "R - Stop odtwarzania",
+                        "Instrukcja", JOptionPane.INFORMATION_MESSAGE);}
 
             }
         }
@@ -311,6 +328,8 @@ public class World extends JFrame {
             controlPanel.add(przyciski[1]);
             controlPanel.add(przyciski[2]);
             controlPanel.add(przyciski[3]);
+            controlPanel.add(przyciski[4]);
+            controlPanel.add(przyciski[5]);
 
 
             return controlPanel;
@@ -332,3 +351,4 @@ public class World extends JFrame {
 
 
 }
+
