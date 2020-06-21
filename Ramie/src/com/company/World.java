@@ -297,9 +297,7 @@ public class World extends JFrame {
                                 "A - Ruch przedramienia w górę \n" +
                                 "D - Ruch przedramienia w dół \n",
                         "Instrukcja", JOptionPane.INFORMATION_MESSAGE);
-                    przesuniecie_obserwatora.set(dystans);
-                    universe.getViewingPlatform().getViewPlatformTransform().setTransform(przesuniecie_obserwatora);
-                    System.out.println("czaczacza");}
+                   }
 
             }
         }

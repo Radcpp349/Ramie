@@ -2,7 +2,10 @@ package com.company;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.Vector;
 
 import javax.media.j3d.*;
@@ -33,14 +36,46 @@ public class Ramie extends JFrame {
 	private boolean recordingON;
 	private boolean temp1;
 	
+
+    private Timer zegar = new Timer();
+    //private ViewingPlatform vPlatform;
+    
+    private boolean CzyNagrywa = false;
+    private boolean przenoszenie = false;
+    private boolean odtworz_ruch = false;
+    private boolean CzyDzwiek = true;
+	
+	  // katy przesunięć robota
+    private float α_podstawa = 0f; // kąt przesunięcia bazy robota
+    private float α_przegub = 0f; // kat przesuniecia ramienia1
+    private float α_przegub2 = 0f;
+	
+    ArrayList <PozycjaRobota> nagranie = new ArrayList<PozycjaRobota>();
+    int klatka = 0;
+    
+    
+     
+    private Transform3D p_walca_2 = new Transform3D();
+    private Transform3D p_zaok1_ram_2 = new Transform3D();
+    private Transform3D p_przesuniety0_ram2 = new Transform3D();
+    private TransformGroup t_przesunieta0_ram2 = new TransformGroup (p_przesuniety0_ram2);
+    private TransformGroup t_zaok1_ram_2 = new TransformGroup (p_zaok1_ram_2);
+    private TransformGroup t_walca_2 = new TransformGroup (p_walca_2);
+    
 	public Ramie(){
 
 		this.klawisze = new boolean[7];
-		this.movements = new Vector<>();
-		this.temp1 = true;
+		//zapamiętywanie pozycji robota
+		 //zegar aby odświeżać ekran
+        zegar.scheduleAtFixedRate(new Poruszanie(), 0, 10);
+        new Timer().scheduleAtFixedRate(new OdegranieRuchu(), 50, 50);
+	   
 	}
+	
+	
 
-
+	 
+	
 	BranchGroup Robot() {
 
 		BranchGroup wezel_scena = new BranchGroup();
@@ -74,8 +109,8 @@ public class Ramie extends JFrame {
 		{wygladPodstawy.setTexture(texPodstawa);
 			System.out.println("kk");}
 
+		
 		Transform3D p_podstawy = new Transform3D();
-
 		p_podstawy.setTranslation(new Vector3f(0.0f, 0.0f, 0.0f));
 		TransformGroup t_podstawy = new TransformGroup (p_podstawy);
 
@@ -98,9 +133,9 @@ public class Ramie extends JFrame {
 		TransformGroup t_walca = new TransformGroup (p_walca);
 		Cylinder walec = new Cylinder(0.7f, 6.4f,Primitive.GENERATE_TEXTURE_COORDS | Primitive.GENERATE_NORMALS | Primitive.GENERATE_NORMALS_INWARD, wygladCylindra);
 
-		Transform3D p_walca_2 = new Transform3D();
+		
 		p_walca_2.setTranslation(new Vector3f(0.0f, 0.0f, 0.0f));
-		TransformGroup t_walca_2 = new TransformGroup (p_walca_2);
+		//TransformGroup t_walca_2 = new TransformGroup (p_walca_2);
 		t_walca_2.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
 
 
@@ -134,9 +169,9 @@ public class Ramie extends JFrame {
 
 
 
-		Transform3D p_zaok1_ram_2 = new Transform3D();
+		
 		p_zaok1_ram_2.setTranslation(new Vector3f(0.0f, 0.f, 0.0f));
-		TransformGroup t_zaok1_ram_2 = new TransformGroup (p_zaok1_ram_2);
+		//TransformGroup t_zaok1_ram_2 = new TransformGroup (p_zaok1_ram_2);
 		t_zaok1_ram_2.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
 
 		Transform3D p_zaok1_ram_3 = new Transform3D();
@@ -206,9 +241,9 @@ public class Ramie extends JFrame {
 		p_przesuniety1_ram2.setTranslation(new Vector3f(2.8f, 0.0f, 0.9f));
 		TransformGroup t_przesunieta1_ram2 = new TransformGroup (p_przesuniety1_ram2);
 
-		Transform3D p_przesuniety0_ram2 = new Transform3D();
+		
 		p_przesuniety0_ram2.setTranslation(new Vector3f(0.0f, 0.0f, 0.0f));
-		TransformGroup t_przesunieta0_ram2 = new TransformGroup (p_przesuniety0_ram2);
+		//TransformGroup t_przesunieta0_ram2 = new TransformGroup (p_przesuniety0_ram2);
 		t_przesunieta0_ram2.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
 
 		Transform3D p_przesuniety2_ram2 = new Transform3D();
@@ -281,7 +316,7 @@ public class Ramie extends JFrame {
 		wezel_scena.addChild(obrot_ramienia_2);
 		
 		Grabbed grabbed = new Grabbed(t_przesunieta2_ram2,transformacja_s2);
-		//grabbed.setSchedulingBounds(new BoundingSphere());
+		grabbed.setSchedulingBounds(new BoundingSphere());
 		wezel_scena.addChild(grabbed);
 
 		Point3d point = new Point3d(11.4d, 1.8d, 0.3d); ///Zmieniłem!!!
@@ -325,6 +360,11 @@ public class Ramie extends JFrame {
 
 		canvas3D.addKeyListener(new KeyListener(){
 			public void keyPressed(KeyEvent e){
+				
+				if (CzyNagrywa) {
+	                nagranie.add(new PozycjaRobota(α_podstawa, α_przegub, α_przegub2, przenoszenie));
+	            }
+				
 				switch(e.getKeyChar()){
 					case 'q':      klawisze[0] = true; break;
 					case 'w':      klawisze[1] = true; break;
@@ -333,9 +373,15 @@ public class Ramie extends JFrame {
 					case 's':      klawisze[4] = true; break;
 					case 'd':      klawisze[5] = true; break;
 					//recording
-					//case 'o':	   recordingON = true; break;
-					//case 'i':      playing(); break;
-					case 'r':	   klawisze[6] = true; break;
+					case 'm':	   { CzyNagrywa = true;
+     			   					nagranie.clear();
+     			   					klatka = 0;
+     			   					System.out.println("nagrywanie "); break;}
+					case 'n':       {CzyNagrywa = false;
+									odtworz_ruch = true; 
+									System.out.println("Odtwarzanie"); break;}
+					case 'r':	    odtworz_ruch = !odtworz_ruch; System.out.println("Stop odtwarzania"); break;
+								   
 				}
 			}
 
@@ -378,14 +424,13 @@ public class Ramie extends JFrame {
 		public void processStimulus(Enumeration enmrtn) {
 			if(klawisze[0]&&(kat<3.14)) {
 				kat+=0.03f;
-				if(recordingON)
-					movements.add(1);}
+				α_podstawa += 0.03f;
+				}
 			if(klawisze[2]&&(kat>-3.14)) {
 				kat-=0.03f;
-				if(recordingON)
-					movements.add(2);}
-			obrot.rotY(kat);
-			ref_do_tg.setTransform(obrot);
+				α_podstawa -=0.03f;
+				}
+			
 			this.wakeupOn(new WakeupOnAWTEvent(KeyEvent.KEY_PRESSED));
 		}
 	}
@@ -407,15 +452,13 @@ public class Ramie extends JFrame {
 		public void processStimulus(Enumeration enmrtn) {
 			if(klawisze[3]&&(kat<2.85)) {
 				kat+=0.03f;
-				if(recordingON)
-					movements.add(3);}
+				 α_przegub +=0.03f;
+				}
 			if(klawisze[5]&&(kat>-2.85)) {
 				kat-=0.03f;
-				if(recordingON)
-					movements.add(4);}
-			obrot.rotZ(kat);
-
-			ref_do_tg.setTransform(obrot);
+				α_przegub -=0.03f;
+				}
+			
 
 			this.wakeupOn(new WakeupOnAWTEvent(KeyEvent.KEY_PRESSED));
 		}
@@ -444,16 +487,14 @@ public class Ramie extends JFrame {
 		public void processStimulus(Enumeration enmrtn) {
 			if(klawisze[1]&&(kat<3.14)) {
 				kat+=0.03f;
-				if(recordingON)
-					movements.add(5);}
+				 α_przegub2 += 0.03f;
+				}
 			if(klawisze[4]&&(kat>-3.14)) {
 				kat-=0.03f;
-				if(recordingON)
-					movements.add(6);}
+				α_przegub2 -= 0.03f;
+				}
 
-			obrot.rotZ(kat);
-
-			ref_do_tg.setTransform(obrot);
+			
 			this.wakeupOn(new WakeupOnAWTEvent(KeyEvent.KEY_PRESSED));
 		}
 	}
@@ -476,13 +517,14 @@ public class Ramie extends JFrame {
 		@Override
 		public void processStimulus(Enumeration enmrtn) {
 			if(klawisze[6]) {
-				this.chuj.addChild(tg1);
-				this.chuj.addChild(tg2);
+				
+				//tg1.addChild(tg2);
+				System.out.println("elo");
 			}
 			else {
-				this.chuj.removeChild(tg1);
-				this.chuj.removeChild(tg2);
-				}
+				
+				//tg1.removeChild(tg2);
+			}
 			this.wakeupOn(new WakeupOnAWTEvent(KeyEvent.KEY_PRESSED));
 		}
 	}
@@ -553,5 +595,80 @@ public class Ramie extends JFrame {
 			wakeupOn(oredCriteria);
 		}
 	}
+	
+	
+	 class PozycjaRobota {
+	        
+	        float α_podstawa;
+	        float α_przegub;
+	        float α_przegub2;
+	        boolean przenoszenie;
+	        
+	            public PozycjaRobota(float α_podstawa, float α_przegub, float α_przegub2, boolean przenoszenie) {
+	                this.α_podstawa = α_podstawa;
+	                this.α_przegub = α_przegub;
+	                this.α_przegub2 = α_przegub2;
+	                this.przenoszenie = przenoszenie;
+	                System.out.println("Pozycja robota");
+	            }
+	                                      
+	    
+	    }
+	  
+	  class OdegranieRuchu extends TimerTask {
+
+	        @Override
+	        public void run() {
+	            if (!odtworz_ruch || nagranie.isEmpty())
+	                return;
+	            if (klatka >= nagranie.size()){
+	                klatka = 0;
+	               
+	            }
+	            System.out.println("Odegranie ruchu");
+	            PozycjaRobota NumerKlatki = nagranie.get(klatka);
+	            α_podstawa = NumerKlatki.α_podstawa;
+	            α_przegub = NumerKlatki.α_przegub;
+	            α_przegub2 = NumerKlatki.α_przegub2;
+	            przenoszenie = NumerKlatki.przenoszenie; 
+	            klatka++;
+	            
+	            
+	           
+	        }
+	    }
+	  
+	//tutaj należy ustawić pozycję początkową
+		 private class Poruszanie extends TimerTask {
+
+			 	Transform3D obrot = new Transform3D();
+			 	Transform3D obrot2 = new Transform3D();
+			 	Transform3D obrot3 = new Transform3D();
+		        @Override
+		        public void run() {
+
+		        	//if(odtworz_ruch) {
+		        	System.out.println("Poruszanie");
+		          // p_walca_2.setTranslation(new Vector3f(0.0f,α_podstawa,0.0f));
+		           //p_zaok1_ram_2.setTranslation(new Vector3f(0.0f,0.0f,α_przegub));
+		           //p_przesuniety0_ram2.setTranslation(new Vector3f(0.0f,0.0f,α_przegub2));
+		           System.out.print(α_podstawa);
+		          obrot.rotY(α_podstawa);
+		          obrot2.rotZ(α_przegub);
+		          obrot3.rotZ(α_przegub2);
+		          
+		          t_walca_2.setTransform(obrot);
+		          t_zaok1_ram_2.setTransform(obrot3);
+		          t_przesunieta0_ram2.setTransform(obrot2);
+		           
+		            //chwytak.getLocalToVworld(T3d_chwytak);
+		            //przegub2.getLocalToVworld(T3d_przegub2);
+		            //Vector3f pos = new Vector3f();
+		            //T3d_chwytak.get(pos);
+		            //Vector3f ramie_pos = new Vector3f();
+		            //T3d_przegub2.get(ramie_pos);
+		        	//}
+		        }
+		    }
 
 }
