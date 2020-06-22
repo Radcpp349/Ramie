@@ -30,7 +30,7 @@ import com.sun.j3d.utils.image.TextureLoader;
 public class Ramie extends JFrame {
 
 	/*Zmienne pomocnicze, odpowiedzialne za poszczególne funkcje*/
-	private boolean klawisze[];
+	
     private Timer zegar = new Timer(); 
     private boolean CzyNagrywa = false;
     private boolean przenoszenie = false;
@@ -73,7 +73,7 @@ public class Ramie extends JFrame {
     // Konstruktor
 	public Ramie(){
 
-		this.klawisze = new boolean[6];
+		
 		//tworzenie obiektów i nakładanie tekstur//
 		Appearance  wygladChwytak = new Appearance();
 
