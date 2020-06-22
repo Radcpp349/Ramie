@@ -1,25 +1,16 @@
 package com.company;
-
+import java.lang.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.Vector;
-
 import javax.media.j3d.*;
 import javax.swing.*;
-import javax.vecmath.Matrix3f;
 import javax.vecmath.Point3d;
-import javax.vecmath.Point4d;
-import javax.vecmath.Vector3d;
 import javax.vecmath.Vector3f;
-
-import com.sun.j3d.utils.geometry.Cone;
 import com.sun.j3d.utils.geometry.Cylinder;
 import com.sun.j3d.utils.geometry.Sphere;
-
 import com.sun.j3d.utils.geometry.*;
 import com.sun.j3d.utils.geometry.Box;
 import com.sun.j3d.utils.image.TextureLoader;
@@ -272,10 +263,6 @@ public class Ramie extends JFrame {
 		///KONIEC KODU RAMIENIA ROBOTA
 
 		Point3d point = new Point3d(11.4d, 1.8d, 0.3d); ///Zmieniłem!!!
-
-		KulaDolna.setBounds(new BoundingSphere(point, 0.1d));
-		Coll coll = new Coll(KulaDolna, KulaDolna.getBounds());
-		wezel_scena.addChild(coll);
 		
 		return wezel_scena;
 
@@ -286,31 +273,54 @@ public class Ramie extends JFrame {
 
 		canvas3D.addKeyListener(new KeyListener(){
 			public void keyPressed(KeyEvent e){
+
+				//Zapisujemy współrzędne środka Kuli w wektorze aby stworzyć kolizje z nią
+
+				Vector3f centrum = new Vector3f();
+				KulaDolna.getLocalToVworld(p_KuliDolnej);
+				p_KuliDolnej.get(centrum);
+				float radius;
+				float distance;
+				radius=KulaDolna.getRadius();
+
+				//zapisujemy pozycje chwytaka
+				Vector3f positionprzedramie = new Vector3f();
+				p_sphere2.get(positionprzedramie);
+				Vector3f oddalenie = new Vector3f((centrum.getX()-positionprzedramie.getX())*(centrum.getX()-positionprzedramie.getX()),(centrum.getY()-positionprzedramie.getY())*(centrum.getY()-positionprzedramie.getY())
+				,(centrum.getZ()-positionprzedramie.getZ())*(centrum.getZ()-positionprzedramie.getZ()));
+
+				distance=oddalenie.length();
 				
 				//warunek sprawdzający czy progra ma nagrywac ruchy robota
 				if (CzyNagrywa) {
 	                nagranie.add(new PozycjaRobota(rot_podstawy, rot_przedramienia, rot_ramienia, przenoszenie));
 	            }
-				
+
+
 				switch(e.getKeyChar()){
 					//Klawisze odpowiedzialne za ruch robota
-					case 'q':       if(rot_podstawy<3.14) 
+					case 'q':
+									if(rot_podstawy<3.14)
 									 rot_podstawy += 0.03f; break;
 														
-					case 'w':       if(rot_ramienia<2.85) 
+					case 'w':       if(rot_ramienia<2.85)
 									 rot_ramienia += 0.03f; break;
 														
-					case 'e':       if(rot_podstawy>-3.14) 
+					case 'e':
+
+						            if(rot_podstawy>-3.14)
 									 rot_podstawy -= 0.03f;break;
 														
 					case 'a':       if(rot_przedramienia<1.05) 
 									 rot_przedramienia += 0.03f; break;
 
 					case 's':       if(blokada()){rot_ramienia += 0.03f;}
+									if(blokada_z_obiektem()){rot_ramienia += 0.03f;}
 								    if(rot_ramienia>-2.85)
 								     rot_ramienia -= 0.03f; break;
 
 					case 'd':      if(blokada()){rot_przedramienia += 0.03f;}
+					 				if(blokada_z_obiektem()){rot_przedramienia += 0.03f;}
 						 		   if(rot_przedramienia>-2.85)
 						 			 rot_przedramienia -= 0.03f; break;
 														
@@ -324,7 +334,8 @@ public class Ramie extends JFrame {
 									System.out.println("Odtwarzanie"); break;}
 					case 'r':	    odtworz_ruch = !odtworz_ruch; System.out.println("Stop odtwarzania"); break;
 					case 'p':		Reset_robota(); break;
-					case 'k':		przenoszenie = !przenoszenie; break;
+					case 'k': if(!przenoszenie) {if(Czy_mozna_zlapac()&&(!blokada_lapania()))  { przenoszenie = !przenoszenie;}} else przenoszenie = !przenoszenie; break;
+
 								   
 				}
 			}
@@ -379,79 +390,59 @@ public class Ramie extends JFrame {
     }
     //blokada ruchu robota //
 	public boolean blokada()
-	{Vector3f positionprzedramie = new Vector3f();
+	{
+		Vector3f positionprzedramie = new Vector3f();
 		p_sphere2.get(positionprzedramie);
 		if(positionprzedramie.getY()<=-3.0f){return true;}
 
 		return false;
 	}
-	
 
-	/*Wykrywanie kolizji */
-	
-	public class Coll extends Behavior {
-		/** The separate criteria used to wake up this beahvior. */
-		protected WakeupCriterion[] theCriteria;
+	public boolean blokada_z_obiektem()
+	{
 
-		/** The OR of the separate criteria. */
-		protected WakeupOr oredCriteria;
+		Vector3f positionprzedramie = new Vector3f();
+		p_sphere2.get(positionprzedramie);
 
-		/** The shape that is watched for collision. */
-		protected Shape3D collidingShape;
+		if(przenoszenie){
 
-		protected Sphere theShape2;
+			if(positionprzedramie.getY()<=-1.24f){return true;}
 
-		/**
-		 * @param theShape
-		 *            Shape3D that is to be watched for collisions.
-		 * @param theBounds
-		 *            Bounds that define the active region for this behaviour
-		 */
-		public Coll(Sphere theShape, Bounds theBounds) {
-			theShape2 = theShape;
-			setSchedulingBounds(theBounds);
-		}
+		}    return false;
+	}
 
+		public boolean blokada_lapania() {
 
-		/**
-		 * This creates an entry, exit and movement collision criteria. These are
-		 * then OR'ed together, and the wake up condition set to the result.
-		 */
-		public void initialize() {
-			theCriteria = new WakeupCriterion[3];
-			theCriteria[0] = new WakeupOnCollisionEntry(theShape2);
-			theCriteria[1] = new WakeupOnCollisionExit(theShape2);
-			theCriteria[2] = new WakeupOnCollisionMovement(theShape2);
-			oredCriteria = new WakeupOr(theCriteria);
-			wakeupOn(oredCriteria);
-		}
-
-		/**
-		 * Where the work is done in this class. A message is printed out using the
-		 * userData of the object collided with. The wake up condition is then set
-		 * to the OR'ed criterion again.
-		 */
-		public void processStimulus(Enumeration criteria) {
-			if(criteria.hasMoreElements()){
-			WakeupCriterion theCriterion = (WakeupCriterion) criteria.nextElement();
-			if (theCriterion instanceof WakeupOnCollisionEntry) {
-				Node theLeaf = ((WakeupOnCollisionEntry) theCriterion)
-						.getTriggeringPath().getObject();
-				System.out.println("Collided with " + theLeaf.getUserData());
-			} else if (theCriterion instanceof WakeupOnCollisionExit) {
-				Node theLeaf = ((WakeupOnCollisionExit) theCriterion)
-						.getTriggeringPath().getObject();
-				System.out.println("Stopped colliding with  "
-						+ theLeaf.getUserData());
-			} else {
-				Node theLeaf = ((WakeupOnCollisionMovement) theCriterion)
-						.getTriggeringPath().getObject();
-				System.out.println("Moved whilst colliding with "
-						+ theLeaf.getUserData());
+			Vector3f positionprzedramie = new Vector3f();
+			p_sphere2.get(positionprzedramie);
+			if (positionprzedramie.getY() <= -1.24f) {
+				return true;
 			}
-			wakeupOn(oredCriteria);
+
+
+			return false;
 		}
-			}
+
+	public boolean Czy_mozna_zlapac()
+	{
+		float x;
+		float y;
+		float z;
+		sphere2.getLocalToVworld(p_sphere2);
+		KulaDolna.getLocalToVworld(p_KuliDolnej);
+		Vector3f pozycja_chwytak = new Vector3f();
+		p_sphere2.get(pozycja_chwytak);
+		Vector3f pozycja_obiekt = new Vector3f();
+		p_KuliDolnej.get(pozycja_obiekt);
+		System.out.print(pozycja_obiekt.x);
+
+		x = Math.abs(pozycja_obiekt.x-pozycja_chwytak.x);
+		y = Math.abs(pozycja_obiekt.y-pozycja_chwytak.y);
+		z = Math.abs(pozycja_obiekt.z-pozycja_chwytak.z);
+		if(x<4.6f && y< 4.6f && z< 4.6f)
+			return true;
+
+		return false;
 	}
 	
 	/*Klasa odpowiedzialna za pobieranie aktualnej pozycji robota do nagrania w celu odtworzenia ruchu*/
@@ -537,7 +528,7 @@ public class Ramie extends JFrame {
 		                kula3D.setTranslation(new Vector3f(coordX, coordY, coordZ));
 
 		            } else {
-		                if (coordY > 1.74f) {
+		                if (coordY > 1.799999f) {
 		                    coordY -= 0.04f;
 		                    kula3D.setTranslation(new Vector3f(coordX, coordY, coordZ));
 
